@@ -1,0 +1,116 @@
+<h2>项目目录结构</h2>
+<p class="subtitle">前后端分离，放在同一仓库中</p>
+
+<div class="split">
+<div class="mockup">
+  <div class="mockup-header">前端 — tools-web (Vue 3)</div>
+  <div class="mockup-body">
+    <div style="font-family:monospace;font-size:12px;line-height:1.8;color:#94a3b8">
+tools-web/<br>
+├── index.html<br>
+├── vite.config.ts<br>
+├── tailwind.config.js<br>
+├── package.json<br>
+├── src/<br>
+│&nbsp;&nbsp;├── main.ts<br>
+│&nbsp;&nbsp;├── App.vue<br>
+│&nbsp;&nbsp;├── router/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── index.ts<br>
+│&nbsp;&nbsp;├── stores/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── markdown.ts<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── json.ts<br>
+│&nbsp;&nbsp;├── api/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── markdown.ts<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── json.ts<br>
+│&nbsp;&nbsp;├── views/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── HomePage.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MarkdownEditor.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── JsonFormatter.vue<br>
+│&nbsp;&nbsp;├── components/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── NavBar.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── ToolCard.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MdToolbar.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MdPreview.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── DocumentList.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── JsonTree.vue<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── RecordList.vue<br>
+│&nbsp;&nbsp;└── utils/<br>
+│&nbsp;&nbsp;&nbsp;&nbsp;├── markdown.ts<br>
+│&nbsp;&nbsp;&nbsp;&nbsp;└── json.ts
+    </div>
+  </div>
+</div>
+<div class="mockup">
+  <div class="mockup-header">后端 — tools-server (Spring Boot)</div>
+  <div class="mockup-body">
+    <div style="font-family:monospace;font-size:12px;line-height:1.8;color:#94a3b8">
+tools-server/<br>
+├── pom.xml<br>
+├── src/main/java/com/tools/<br>
+│&nbsp;&nbsp;├── ToolsApplication.java<br>
+│&nbsp;&nbsp;├── config/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── WebConfig.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── CorsConfig.java<br>
+│&nbsp;&nbsp;├── entity/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MarkdownDoc.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── JsonRecord.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── OperationLog.java<br>
+│&nbsp;&nbsp;├── repository/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MarkdownRepo.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── JsonRepo.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── LogRepo.java<br>
+│&nbsp;&nbsp;├── service/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MarkdownService.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── JsonService.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── LogService.java<br>
+│&nbsp;&nbsp;├── controller/<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── MarkdownController.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├── JsonController.java<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└── LogController.java<br>
+│&nbsp;&nbsp;└── dto/<br>
+│&nbsp;&nbsp;&nbsp;&nbsp;├── MarkdownDocDto.java<br>
+│&nbsp;&nbsp;&nbsp;&nbsp;└── JsonRecordDto.java<br>
+├── src/main/resources/<br>
+│&nbsp;&nbsp;└── application.yml
+    </div>
+  </div>
+</div>
+</div>
+
+<div style="margin-top:20px">
+  <h3>技术栈一览</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">前端框架</td>
+      <td style="color:#e2e8f0;padding:8px 0">Vue 3 + TypeScript + Vite</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">CSS</td>
+      <td style="color:#e2e8f0;padding:8px 0">Tailwind CSS</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">状态管理</td>
+      <td style="color:#e2e8f0;padding:8px 0">Pinia</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">Markdown 渲染</td>
+      <td style="color:#e2e8f0;padding:8px 0">marked + highlight.js</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">JSON 处理</td>
+      <td style="color:#e2e8f0;padding:8px 0">原生 JSON API</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">后端框架</td>
+      <td style="color:#e2e8f0;padding:8px 0">Spring Boot 3 + JDK 17</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">持久层</td>
+      <td style="color:#e2e8f0;padding:8px 0">Spring Data JPA</td>
+    </tr>
+    <tr style="border-bottom:1px solid #334155">
+      <td style="color:#64748b;padding:8px 0">数据库</td>
+      <td style="color:#e2e8f0;padding:8px 0">MySQL 8</td>
+    </tr>
+  </table>
+</div>

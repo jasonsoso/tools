@@ -1,0 +1,89 @@
+<h2>API 设计 & 组件树</h2>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div style="flex:1;min-width:280px">
+<h3>REST API 端点</h3>
+<div class="mockup">
+  <div class="mockup-header">Markdown 相关</div>
+  <div class="mockup-body" style="font-size:13px">
+    <div style="color:#38bdf8;margin-bottom:6px">GET    /api/markdown</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">获取文档列表</div>
+    <div style="color:#38bdf8;margin-bottom:6px">POST   /api/markdown</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">创建新文档</div>
+    <div style="color:#38bdf8;margin-bottom:6px">GET    /api/markdown/{id}</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">获取单个文档</div>
+    <div style="color:#38bdf8;margin-bottom:6px">PUT    /api/markdown/{id}</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">更新文档</div>
+    <div style="color:#ef4444;margin-bottom:6px">DELETE /api/markdown/{id}</div>
+    <div style="color:#94a3b8;font-size:11px">删除文档</div>
+  </div>
+</div>
+<div class="mockup" style="margin-top:16px">
+  <div class="mockup-header">JSON 相关</div>
+  <div class="mockup-body" style="font-size:13px">
+    <div style="color:#38bdf8;margin-bottom:6px">GET    /api/json</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">获取记录列表</div>
+    <div style="color:#38bdf8;margin-bottom:6px">POST   /api/json</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">创建新记录</div>
+    <div style="color:#38bdf8;margin-bottom:6px">GET    /api/json/{id}</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">获取单个记录</div>
+    <div style="color:#38bdf8;margin-bottom:6px">PUT    /api/json/{id}</div>
+    <div style="color:#94a3b8;margin-bottom:12px;font-size:11px">更新记录</div>
+    <div style="color:#ef4444;margin-bottom:6px">DELETE /api/json/{id}</div>
+    <div style="color:#94a3b8;font-size:11px">删除记录</div>
+  </div>
+</div>
+<div class="mockup" style="margin-top:16px">
+  <div class="mockup-header">操作日志</div>
+  <div class="mockup-body" style="font-size:13px">
+    <div style="color:#38bdf8;margin-bottom:6px">GET    /api/logs</div>
+    <div style="color:#94a3b8;font-size:11px">分页查询操作日志</div>
+  </div>
+</div>
+</div>
+
+<div style="flex:1;min-width:280px">
+<h3>前端组件树</h3>
+<div class="mockup">
+  <div class="mockup-body" style="font-size:13px">
+    <div style="margin-bottom:14px">
+      <div style="color:#c084fc;font-weight:600;margin-bottom:4px">App.vue</div>
+      <div style="padding-left:16px;border-left:2px solid #334155;margin-left:4px">
+        <div style="color:#64748b;margin-bottom:4px">RouterView</div>
+        <div style="color:#94a3b8;margin-bottom:8px">NavBar（全局导航栏）</div>
+        <div style="padding-left:16px;border-left:2px solid #334155">
+          <div style="color:#38bdf8;margin-bottom:6px">HomePage</div>
+          <div style="padding-left:16px;border-left:2px solid #334155;margin-bottom:12px">
+            <div style="color:#94a3b8;font-size:12px">ToolCard × 2</div>
+          </div>
+          <div style="color:#38bdf8;margin-bottom:6px">MarkdownEditor</div>
+          <div style="padding-left:16px;border-left:2px solid #334155;margin-bottom:12px">
+            <div style="color:#94a3b8;font-size:12px">Toolbar</div>
+            <div style="color:#94a3b8;font-size:12px">EditorPanel</div>
+            <div style="color:#94a3b8;font-size:12px">PreviewPanel</div>
+            <div style="color:#94a3b8;font-size:12px">DocumentList</div>
+          </div>
+          <div style="color:#38bdf8;margin-bottom:6px">JsonFormatter</div>
+          <div style="padding-left:16px;border-left:2px solid #334155">
+            <div style="color:#94a3b8;font-size:12px">InputPanel</div>
+            <div style="color:#94a3b8;font-size:12px">OutputPanel（含 TreeView）</div>
+            <div style="color:#94a3b8;font-size:12px">RecordList</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="margin-top:16px">
+  <h3>状态管理</h3>
+  <p style="color:#94a3b8;font-size:13px">使用 Pinia 管理全局状态，各工具独立 store</p>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <span style="background:#334155;color:#e2e8f0;padding:4px 10px;border-radius:4px;font-size:12px">useMarkdownStore</span>
+    <span style="background:#334155;color:#e2e8f0;padding:4px 10px;border-radius:4px;font-size:12px">useJsonStore</span>
+    <span style="background:#334155;color:#e2e8f0;padding:4px 10px;border-radius:4px;font-size:12px">useLogStore</span>
+  </div>
+</div>
+</div>
+
+</div>

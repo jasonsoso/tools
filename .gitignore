@@ -1,0 +1,26 @@
+# ===== Test artifacts =====
+test-screenshots/
+
+# ===== Claude Code local config =====
+.claude/settings.local.json
+.claude/worktrees/
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ===== IDE (root level — sub-projects have their own) =====
+.idea/
+.vscode/
+
+# ===== Environment =====
+.env
+.env.local
+.env.*.local
+
+# ===== Temp =====
+*.tmp
+*.bak
