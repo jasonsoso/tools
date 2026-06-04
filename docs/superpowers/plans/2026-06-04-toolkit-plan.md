@@ -4,7 +4,7 @@
 
 **目标：** 构建包含 Markdown 在线编辑器和 JSON 在线格式化器的工具包，支持用户认证、数学公式、表格编辑、目录大纲和文档导出。
 
-**架构：** Vue 3 + Vite 前端通过 REST API + JWT Auth 与 Spring Boot 3 + MyBatis-Plus 后端通信，数据持久化到 MySQL 8。单仓库分 `tools-web/` 和 `tools-server/` 目录。
+**架构：** Vue 3 + Vite 前端通过 REST API + JWT Auth 与 Spring Boot 3 + MyBatis-Plus 后端通信，数据持久化到 MySQL 8。后端四层分离：Controller → Service → Repository → Mapper。Repository 封装所有 SQL（LambdaQueryWrapper），Service 只写业务逻辑。单仓库分 `tools-web/` 和 `tools-server/` 目录。
 
 **技术栈：** Vue 3, TypeScript, Vite, Tailwind CSS, Pinia, CodeMirror 6, markdown-it, KaTeX, Spring Boot 3, JDK 17, Spring Security, JWT, MyBatis-Plus, MySQL 8, JUnit 5, Vitest
 
@@ -36,10 +36,14 @@
 | `dto/MarkdownDocDto.java` | 文档请求/响应 DTO |
 | `dto/JsonRecordDto.java` | JSON 记录请求/响应 DTO |
 | `common/ApiResponse.java` | 统一响应包装类 `{ code, message, data }` |
-| `service/AuthService.java` | 注册、登录业务逻辑 |
-| `service/MarkdownService.java` | 文档 CRUD + 日志记录 |
-| `service/JsonService.java` | 记录 CRUD + 日志记录 |
-| `service/LogService.java` | 日志分页查询 |
+| `service/AuthService.java` | 注册、登录业务逻辑，依赖 UserRepository |
+| `service/MarkdownService.java` | 文档业务逻辑（校验归属、组装、日志），依赖 MarkdownDocRepository + OperationLogRepository |
+| `service/JsonService.java` | 记录业务逻辑（JSON 校验、组装、日志），依赖 JsonRecordRepository + OperationLogRepository |
+| `service/LogService.java` | 日志分页查询逻辑，依赖 OperationLogRepository |
+| `repository/UserRepository.java` | 封装用户 SQL 查询（LambdaQueryWrapper），提供 findByUsername、findByEmail 等 |
+| `repository/MarkdownDocRepository.java` | 封装文档 SQL 查询，提供 findByUserId、findByIdAndUserId 等 |
+| `repository/JsonRecordRepository.java` | 封装记录 SQL 查询，提供 findByUserId、findByIdAndUserId 等 |
+| `repository/OperationLogRepository.java` | 封装日志 SQL 查询，提供 findByPage 分页方法 |
 | `controller/AuthController.java` | 认证 API |
 | `controller/MarkdownController.java` | 文档 API |
 | `controller/JsonController.java` | JSON 记录 API |
@@ -563,11 +567,153 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 }
 ```
 
-- [ ] **步骤 8：Commit**
+- [ ] **步骤 8：创建 Repository 层**
+
+```java
+// UserRepository.java
+package com.tools.repository;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tools.entity.User;
+import com.tools.mapper.UserMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class UserRepository {
+    private final UserMapper userMapper;
+
+    public User findByUsername(String username) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+    }
+
+    public User findByEmail(String email) {
+        return userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
+    }
+
+    public void save(User user) {
+        userMapper.insert(user);
+    }
+}
+```
+
+```java
+// MarkdownDocRepository.java
+package com.tools.repository;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tools.entity.MarkdownDoc;
+import com.tools.mapper.MarkdownDocMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class MarkdownDocRepository {
+    private final MarkdownDocMapper docRepository;
+
+    public List<MarkdownDoc> findByUserIdOrderByUpdatedAtDesc(Long userId) {
+        return docRepository.selectList(new LambdaQueryWrapper<MarkdownDoc>()
+                .eq(MarkdownDoc::getUserId, userId)
+                .orderByDesc(MarkdownDoc::getUpdatedAt));
+    }
+
+    public MarkdownDoc findById(Long id) {
+        return docRepository.selectById(id);
+    }
+
+    public void save(MarkdownDoc doc) {
+        docRepository.insert(doc);
+    }
+
+    public void update(MarkdownDoc doc) {
+        docRepository.updateById(doc);
+    }
+
+    public void deleteById(Long id) {
+        docRepository.deleteById(id);
+    }
+}
+```
+
+```java
+// JsonRecordRepository.java
+package com.tools.repository;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.tools.entity.JsonRecord;
+import com.tools.mapper.JsonRecordMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class JsonRecordRepository {
+    private final JsonRecordMapper recordMapper;
+
+    public List<JsonRecord> findByUserIdOrderByUpdatedAtDesc(Long userId) {
+        return recordMapper.selectList(new LambdaQueryWrapper<JsonRecord>()
+                .eq(JsonRecord::getUserId, userId)
+                .orderByDesc(JsonRecord::getUpdatedAt));
+    }
+
+    public JsonRecord findById(Long id) {
+        return recordMapper.selectById(id);
+    }
+
+    public void save(JsonRecord record) {
+        recordMapper.insert(record);
+    }
+
+    public void update(JsonRecord record) {
+        recordMapper.updateById(record);
+    }
+
+    public void deleteById(Long id) {
+        recordMapper.deleteById(id);
+    }
+}
+```
+
+```java
+// OperationLogRepository.java
+package com.tools.repository;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.tools.entity.OperationLog;
+import com.tools.mapper.OperationLogMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class OperationLogRepository {
+    private final OperationLogMapper logRepository;
+
+    public void save(OperationLog log) {
+        logRepository.insert(log);
+    }
+
+    public IPage<OperationLog> findByPage(int page, int size) {
+        return logRepository.selectPage(new Page<>(page, size),
+                new LambdaQueryWrapper<OperationLog>()
+                        .orderByDesc(OperationLog::getCreatedAt));
+    }
+}
+```
+
+- [ ] **步骤 9：Commit**
 
 ```bash
-git add tools-server/src/main/java/com/tools/entity/ tools-server/src/main/java/com/tools/mapper/ tools-server/src/main/resources/db/ tools-server/src/main/java/com/tools/config/MyMetaObjectHandler.java
-git commit -m "feat: add JPA entities, MyBatis-Plus mappers, DB schema, and auto-fill handler"
+git add tools-server/src/main/java/com/tools/entity/ tools-server/src/main/java/com/tools/mapper/ tools-server/src/main/java/com/tools/repository/ tools-server/src/main/resources/db/ tools-server/src/main/java/com/tools/config/MyMetaObjectHandler.java
+git commit -m "feat: add entities, mappers, repositories, DB schema, and auto-fill handler"
 ```
 
 ---
@@ -786,12 +932,11 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserMapper userMapper;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userMapper.selectOne(
-                new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在: " + username);
         }
@@ -902,7 +1047,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
-    @Mock UserMapper userMapper;
+    @Mock UserRepository userRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtTokenProvider jwtTokenProvider;
     @InjectMocks AuthService authService;
@@ -914,8 +1059,8 @@ class AuthServiceTest {
         req.setEmail("test@test.com");
         req.setPassword("password123");
 
-        when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(null);
-        when(userMapper.insert(any(User.class))).thenReturn(1);
+        when(userRepository.findByUsername("test")).thenReturn(null);
+        when(userRepository.findByEmail("test@test.com")).thenReturn(null);
         when(passwordEncoder.encode("password123")).thenReturn("hashed_password");
         when(jwtTokenProvider.generateToken(any(), eq("test"))).thenReturn("jwt.token.here");
 
@@ -926,7 +1071,7 @@ class AuthServiceTest {
         assertThat(result.getData().getUsername()).isEqualTo("test");
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userMapper).insert(userCaptor.capture());
+        verify(userRepository).save(userCaptor.capture());
         assertThat(userCaptor.getValue().getPasswordHash()).isEqualTo("hashed_password");
     }
 
@@ -937,12 +1082,12 @@ class AuthServiceTest {
         req.setEmail("existing@test.com");
         req.setPassword("password123");
 
-        when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(new User());
+        when(userRepository.findByUsername("existing")).thenReturn(new User());
 
         ApiResponse<LoginResponse> result = authService.register(req);
         assertThat(result.getCode()).isEqualTo(400);
         assertThat(result.getMessage()).contains("已存在");
-        verify(userMapper, never()).insert(any());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -956,7 +1101,7 @@ class AuthServiceTest {
         user.setUsername("test");
         user.setPasswordHash("hashed_password");
 
-        when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(user);
+        when(userRepository.findByUsername("test")).thenReturn(user);
         when(passwordEncoder.matches("correct", "hashed_password")).thenReturn(true);
         when(jwtTokenProvider.generateToken(1L, "test")).thenReturn("jwt.token.here");
 
@@ -975,7 +1120,7 @@ class AuthServiceTest {
         User user = new User();
         user.setPasswordHash("hashed");
 
-        when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(user);
+        when(userRepository.findByUsername("test")).thenReturn(user);
         when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
 
         ApiResponse<LoginResponse> result = authService.login(req);
@@ -1068,18 +1213,16 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final UserMapper userMapper;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
     public ApiResponse<LoginResponse> register(RegisterRequest req) {
-        // Check if username or email already exists
-        if (userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, req.getUsername())) != null) {
+        // Check if username or email already exists (via Repository)
+        if (userRepository.findByUsername(req.getUsername()) != null) {
             return ApiResponse.error(400, "用户名已存在");
         }
-        if (userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getEmail, req.getEmail())) != null) {
+        if (userRepository.findByEmail(req.getEmail()) != null) {
             return ApiResponse.error(400, "邮箱已被注册");
         }
 
@@ -1087,15 +1230,14 @@ public class AuthService {
         user.setUsername(req.getUsername());
         user.setEmail(req.getEmail());
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        userMapper.insert(user);
+        userRepository.save(user);
 
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
         return ApiResponse.success(new LoginResponse(token, user.getId(), user.getUsername()));
     }
 
     public ApiResponse<LoginResponse> login(LoginRequest req) {
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, req.getUsername()));
+        User user = userRepository.findByUsername(req.getUsername());
         if (user == null) {
             return ApiResponse.error(401, "用户名或密码错误");
         }
@@ -1296,8 +1438,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MarkdownServiceTest {
-    @Mock MarkdownDocMapper docMapper;
-    @Mock OperationLogMapper logMapper;
+    @Mock MarkdownDocRepository docRepository;
+    @Mock OperationLogRepository logRepository;
     @InjectMocks MarkdownService markdownService;
 
     @Test
@@ -1306,8 +1448,8 @@ class MarkdownServiceTest {
         dto.setTitle("Test Doc");
         dto.setContent("# Hello");
 
-        when(docMapper.insert(any(MarkdownDoc.class))).thenReturn(1);
-        when(logMapper.insert(any(OperationLog.class))).thenReturn(1);
+        when(docRepository.save(any(MarkdownDoc.class))).thenAnswer(inv -> { ((MarkdownDoc)inv.getArgument(0)).setId(1L); return 1; });
+        when(logRepository.insert(any(OperationLog.class))).thenReturn(1);
 
         ApiResponse<MarkdownDoc> result = markdownService.create(dto, 1L);
 
@@ -1316,7 +1458,7 @@ class MarkdownServiceTest {
         assertThat(result.getData().getTitle()).isEqualTo("Test Doc");
 
         ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
-        verify(logMapper).insert(logCaptor.capture());
+        verify(logRepository).insert(logCaptor.capture());
         assertThat(logCaptor.getValue().getAction()).isEqualTo("CREATE");
         assertThat(logCaptor.getValue().getToolType()).isEqualTo("markdown");
     }
@@ -1328,7 +1470,7 @@ class MarkdownServiceTest {
         doc1.setUserId(1L);
         doc1.setTitle("User1 Doc");
 
-        when(docMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(doc1));
+        when(docRepository.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(doc1));
 
         ApiResponse<List<MarkdownDoc>> result = markdownService.listByUser(1L);
         assertThat(result.getData()).hasSize(1);
@@ -1342,7 +1484,7 @@ class MarkdownServiceTest {
         doc.setUserId(2L);
         doc.setTitle("Other's Doc");
 
-        when(docMapper.selectById(1L)).thenReturn(doc);
+        when(docRepository.selectById(1L)).thenReturn(doc);
 
         ApiResponse<MarkdownDoc> result = markdownService.getById(1L, 1L);
         assertThat(result.getCode()).isEqualTo(403);
@@ -1350,7 +1492,7 @@ class MarkdownServiceTest {
 
     @Test
     void shouldReturn404ForMissingDoc() {
-        when(docMapper.selectById(999L)).thenReturn(null);
+        when(docRepository.selectById(999L)).thenReturn(null);
         ApiResponse<MarkdownDoc> result = markdownService.getById(999L, 1L);
         assertThat(result.getCode()).isEqualTo(404);
     }
@@ -1396,25 +1538,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MarkdownService {
-    private final MarkdownDocMapper docMapper;
-    private final OperationLogMapper logMapper;
+    private final MarkdownDocRepository docRepository;
+    private final OperationLogRepository logRepository;
 
     public ApiResponse<List<MarkdownDoc>> listByUser(Long userId) {
-        List<MarkdownDoc> docs = docMapper.selectList(
-                new LambdaQueryWrapper<MarkdownDoc>()
-                        .eq(MarkdownDoc::getUserId, userId)
-                        .orderByDesc(MarkdownDoc::getUpdatedAt));
-        return ApiResponse.success(docs);
+        return ApiResponse.success(docRepository.findByUserIdOrderByUpdatedAtDesc(userId));
     }
 
     public ApiResponse<MarkdownDoc> getById(Long id, Long userId) {
-        MarkdownDoc doc = docMapper.selectById(id);
-        if (doc == null) {
-            return ApiResponse.error(404, "文档不存在");
-        }
-        if (!doc.getUserId().equals(userId)) {
-            return ApiResponse.error(403, "无权访问此文档");
-        }
+        MarkdownDoc doc = docRepository.findById(id);
+        if (doc == null) return ApiResponse.error(404, "文档不存在");
+        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权访问此文档");
         return ApiResponse.success(doc);
     }
 
@@ -1423,48 +1557,50 @@ public class MarkdownService {
         doc.setUserId(userId);
         doc.setTitle(dto.getTitle() != null ? dto.getTitle() : "未命名文档");
         doc.setContent(dto.getContent() != null ? dto.getContent() : "");
-        docMapper.insert(doc);
+        docRepository.save(doc);
 
-        logOperation(userId, "CREATE", "创建文档：" + doc.getTitle());
+        OperationLog log = new OperationLog();
+        log.setUserId(userId);
+        log.setToolType("markdown");
+        log.setAction("CREATE");
+        log.setDetail("创建文档：" + doc.getTitle());
+        logRepository.save(log);
+
         return ApiResponse.success(doc);
     }
 
     public ApiResponse<MarkdownDoc> update(Long id, MarkdownDocDto dto, Long userId) {
-        MarkdownDoc doc = docMapper.selectById(id);
-        if (doc == null) {
-            return ApiResponse.error(404, "文档不存在");
-        }
-        if (!doc.getUserId().equals(userId)) {
-            return ApiResponse.error(403, "无权修改此文档");
-        }
+        MarkdownDoc doc = docRepository.findById(id);
+        if (doc == null) return ApiResponse.error(404, "文档不存在");
+        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权修改此文档");
         if (dto.getTitle() != null) doc.setTitle(dto.getTitle());
         if (dto.getContent() != null) doc.setContent(dto.getContent());
-        docMapper.updateById(doc);
+        docRepository.update(doc);
 
-        logOperation(userId, "UPDATE", "更新文档：" + doc.getTitle());
+        OperationLog log = new OperationLog();
+        log.setUserId(userId);
+        log.setToolType("markdown");
+        log.setAction("UPDATE");
+        log.setDetail("更新文档：" + doc.getTitle());
+        logRepository.save(log);
+
         return ApiResponse.success(doc);
     }
 
     public ApiResponse<Void> delete(Long id, Long userId) {
-        MarkdownDoc doc = docMapper.selectById(id);
-        if (doc == null) {
-            return ApiResponse.error(404, "文档不存在");
-        }
-        if (!doc.getUserId().equals(userId)) {
-            return ApiResponse.error(403, "无权删除此文档");
-        }
-        docMapper.deleteById(id);
-        logOperation(userId, "DELETE", "删除文档：" + doc.getTitle());
-        return ApiResponse.success(null);
-    }
+        MarkdownDoc doc = docRepository.findById(id);
+        if (doc == null) return ApiResponse.error(404, "文档不存在");
+        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权删除此文档");
+        docRepository.deleteById(id);
 
-    private void logOperation(Long userId, String action, String detail) {
         OperationLog log = new OperationLog();
         log.setUserId(userId);
         log.setToolType("markdown");
-        log.setAction(action);
-        log.setDetail(detail);
-        logMapper.insert(log);
+        log.setAction("DELETE");
+        log.setDetail("删除文档：" + doc.getTitle());
+        logRepository.save(log);
+
+        return ApiResponse.success(null);
     }
 }
 ```
@@ -1737,8 +1873,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class JsonServiceTest {
-    @Mock JsonRecordMapper recordMapper;
-    @Mock OperationLogMapper logMapper;
+    @Mock JsonRecordRepository recordRepository;
+    @Mock OperationLogRepository logRepository;
     @InjectMocks JsonService jsonService;
 
     @Test
@@ -1747,14 +1883,12 @@ class JsonServiceTest {
         dto.setName("test.json");
         dto.setContent("{\"key\":\"value\"}");
 
-        when(recordMapper.insert(any(JsonRecord.class))).thenReturn(1);
-        when(logMapper.insert(any(OperationLog.class))).thenReturn(1);
-
         ApiResponse<JsonRecord> result = jsonService.create(dto, 1L);
 
         assertThat(result.getCode()).isEqualTo(200);
         assertThat(result.getData().getUserId()).isEqualTo(1L);
-        verify(logMapper).insert(any(OperationLog.class));
+        verify(recordRepository).save(any(JsonRecord.class));
+        verify(logRepository).save(any(OperationLog.class));
     }
 
     @Test
@@ -1766,7 +1900,7 @@ class JsonServiceTest {
         ApiResponse<JsonRecord> result = jsonService.create(dto, 1L);
         assertThat(result.getCode()).isEqualTo(400);
         assertThat(result.getMessage()).contains("JSON");
-        verify(recordMapper, never()).insert(any());
+        verify(recordRepository, never()).save(any());
     }
 
     @Test
@@ -1774,7 +1908,7 @@ class JsonServiceTest {
         JsonRecord rec = new JsonRecord();
         rec.setId(1L);
         rec.setName("test");
-        when(recordMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(rec));
+        when(recordRepository.findByUserIdOrderByUpdatedAtDesc(1L)).thenReturn(List.of(rec));
 
         ApiResponse<List<JsonRecord>> result = jsonService.listByUser(1L);
         assertThat(result.getData()).hasSize(1);
@@ -1822,48 +1956,47 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class JsonService {
-    private final JsonRecordMapper recordMapper;
-    private final OperationLogMapper logMapper;
+    private final JsonRecordRepository recordRepository;
+    private final OperationLogRepository logRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ApiResponse<List<JsonRecord>> listByUser(Long userId) {
-        List<JsonRecord> records = recordMapper.selectList(
-                new LambdaQueryWrapper<JsonRecord>()
-                        .eq(JsonRecord::getUserId, userId)
-                        .orderByDesc(JsonRecord::getUpdatedAt));
-        return ApiResponse.success(records);
+        return ApiResponse.success(recordRepository.findByUserIdOrderByUpdatedAtDesc(userId));
     }
 
     public ApiResponse<JsonRecord> getById(Long id, Long userId) {
-        JsonRecord record = recordMapper.selectById(id);
+        JsonRecord record = recordRepository.findById(id);
         if (record == null) return ApiResponse.error(404, "记录不存在");
         if (!record.getUserId().equals(userId)) return ApiResponse.error(403, "无权访问");
         return ApiResponse.success(record);
     }
 
     public ApiResponse<JsonRecord> create(JsonRecordDto dto, Long userId) {
-        // Validate JSON
         try {
             objectMapper.readTree(dto.getContent());
         } catch (Exception e) {
             return ApiResponse.error(400, "JSON 格式无效: " + e.getMessage());
         }
-
         JsonRecord record = new JsonRecord();
         record.setUserId(userId);
         record.setName(dto.getName() != null ? dto.getName() : "未命名记录");
         record.setContent(dto.getContent());
-        recordMapper.insert(record);
+        recordRepository.save(record);
 
-        logOperation(userId, "CREATE", "创建记录：" + record.getName());
+        OperationLog log = new OperationLog();
+        log.setUserId(userId);
+        log.setToolType("json");
+        log.setAction("CREATE");
+        log.setDetail("创建记录：" + record.getName());
+        logRepository.save(log);
+
         return ApiResponse.success(record);
     }
 
     public ApiResponse<JsonRecord> update(Long id, JsonRecordDto dto, Long userId) {
-        JsonRecord record = recordMapper.selectById(id);
+        JsonRecord record = recordRepository.findById(id);
         if (record == null) return ApiResponse.error(404, "记录不存在");
         if (!record.getUserId().equals(userId)) return ApiResponse.error(403, "无权修改");
-
         if (dto.getContent() != null) {
             try {
                 objectMapper.readTree(dto.getContent());
@@ -1873,17 +2006,23 @@ public class JsonService {
             record.setContent(dto.getContent());
         }
         if (dto.getName() != null) record.setName(dto.getName());
-        recordMapper.updateById(record);
+        recordRepository.update(record);
 
-        logOperation(userId, "UPDATE", "更新记录：" + record.getName());
+        OperationLog log = new OperationLog();
+        log.setUserId(userId);
+        log.setToolType("json");
+        log.setAction("UPDATE");
+        log.setDetail("更新记录：" + record.getName());
+        logRepository.save(log);
+
         return ApiResponse.success(record);
     }
 
     public ApiResponse<Void> delete(Long id, Long userId) {
-        JsonRecord record = recordMapper.selectById(id);
+        JsonRecord record = recordRepository.findById(id);
         if (record == null) return ApiResponse.error(404, "记录不存在");
         if (!record.getUserId().equals(userId)) return ApiResponse.error(403, "无权删除");
-        recordMapper.deleteById(id);
+        recordRepository.deleteById(id);
         logOperation(userId, "DELETE", "删除记录：" + record.getName());
         return ApiResponse.success(null);
     }
@@ -1894,7 +2033,7 @@ public class JsonService {
         log.setToolType("json");
         log.setAction(action);
         log.setDetail(detail);
-        logMapper.insert(log);
+        logRepository.insert(log);
     }
 }
 ```
@@ -1983,14 +2122,10 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class LogService {
-    private final OperationLogMapper logMapper;
+    private final OperationLogRepository logRepository;
 
     public ApiResponse<IPage<OperationLog>> list(int page, int size) {
-        Page<OperationLog> p = new Page<>(page, size);
-        IPage<OperationLog> result = logMapper.selectPage(p,
-                new LambdaQueryWrapper<OperationLog>()
-                        .orderByDesc(OperationLog::getCreatedAt));
-        return ApiResponse.success(result);
+        return ApiResponse.success(logRepository.findByPage(page, size));
     }
 }
 ```

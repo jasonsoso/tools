@@ -96,6 +96,11 @@ tools/
 │       │   │   ├── MarkdownDocMapper.java
 │       │   │   ├── JsonRecordMapper.java
 │       │   │   └── OperationLogMapper.java
+│       │   ├── repository/
+│       │   │   ├── UserRepository.java
+│       │   │   ├── MarkdownDocRepository.java
+│       │   │   ├── JsonRecordRepository.java
+│       │   │   └── OperationLogRepository.java
 │       │   ├── service/
 │       │   │   ├── AuthService.java
 │       │   │   ├── MarkdownService.java
@@ -294,12 +299,29 @@ App.vue
 | 404 | 资源不存在 |
 | 500 | 服务端错误 |
 
+### 分层职责
+
+```
+Controller → Service → Repository → Mapper (MyBatis-Plus) → DB
+```
+
+| 层 | 职责 | 依赖 |
+|---|---|---|
+| Controller | 接收 HTTP 请求，参数校验，调用 Service | Service |
+| Service | 业务逻辑：校验、组装、事务、日志记录 | Repository |
+| Repository | 封装 SQL 查询（LambdaQueryWrapper 等），提供语义化方法 | Mapper |
+| Mapper | MyBatis-Plus BaseMapper，只声明表映射，不写代码 | — |
+
 ### 服务层
 
 - **AuthService** — 注册、登录、密码 bcrypt 加密/验证
-- **MarkdownService** — 文档 CRUD（按 user_id 隔离），操作自动记录日志
-- **JsonService** — 记录 CRUD（按 user_id 隔离），操作自动记录日志
-- **LogService** — 日志分页查询
+- **MarkdownDocRepository** — 文档查询封装（LambdaQueryWrapper），提供 findByUserId、findByIdAndUserId 等方法
+- **JsonRecordRepository** — 记录查询封装，提供 findByUserId、findByIdAndUserId 等方法
+- **UserRepository** — 用户查询封装，提供 findByUsername、findByEmail 等方法
+- **OperationLogRepository** — 日志查询封装，提供 findByPage 分页方法
+- **MarkdownService** — 文档业务逻辑（校验归属、组装数据、调用 Repository、自动记录日志）
+- **JsonService** — 记录业务逻辑（JSON 校验、调用 Repository、自动记录日志）
+- **LogService** — 日志分页查询逻辑
 
 ### 安全配置
 
