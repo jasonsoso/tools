@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { authApi, type AuthResult } from '@/api/auth'
 import router from '@/router'
-
-interface AuthResult {
-  token: string
-  userId: number
-  username: string
-}
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -24,6 +19,24 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('username', result.username)
   }
 
+  async function login(params: { username: string; password: string }) {
+    const res = await authApi.login(params)
+    if (res.data.code === 200) {
+      setAuth(res.data.data)
+      router.push('/')
+    }
+    return res.data
+  }
+
+  async function register(params: { username: string; email: string; password: string }) {
+    const res = await authApi.register(params)
+    if (res.data.code === 200) {
+      setAuth(res.data.data)
+      router.push('/')
+    }
+    return res.data
+  }
+
   function logout() {
     token.value = ''
     userId.value = 0
@@ -34,5 +47,5 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/login')
   }
 
-  return { token, userId, username, isLoggedIn, setAuth, logout }
+  return { token, userId, username, isLoggedIn, setAuth, login, register, logout }
 })
