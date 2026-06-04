@@ -11,12 +11,13 @@
 | 前端框架 | Vue 3 + TypeScript + Vite | 最新稳定版 |
 | CSS | Tailwind CSS | 3.x |
 | 状态管理 | Pinia | 2.x |
-| Markdown 渲染 | marked + highlight.js | 最新 |
+| Markdown 编辑器 | CodeMirror 6 | 最新 |
+| Markdown 渲染 | markdown-it + highlight.js | 最新 |
 | 数学公式 | KaTeX | 最新 |
 | 后端框架 | Spring Boot 3 | 3.x |
 | JDK | JDK 17 | 17 LTS |
 | 认证 | Spring Security + JWT | - |
-| 持久层 | Spring Data JPA | - |
+| 持久层 | MyBatis-Plus | 3.x |
 | 数据库 | MySQL | 8.0 |
 
 ## 架构
@@ -25,7 +26,7 @@
 浏览器 (Vue 3 SPA)
     ↕ REST API (JSON) + JWT Auth
 Spring Boot 3 服务
-    ↕ JPA/Hibernate
+    ↕ MyBatis-Plus
 MySQL 8
 ```
 
@@ -90,11 +91,11 @@ tools/
 │       │   │   ├── MarkdownDoc.java
 │       │   │   ├── JsonRecord.java
 │       │   │   └── OperationLog.java
-│       │   ├── repository/
-│       │   │   ├── UserRepo.java
-│       │   │   ├── MarkdownDocRepo.java
-│       │   │   ├── JsonRecordRepo.java
-│       │   │   └── OperationLogRepo.java
+│       │   ├── mapper/
+│       │   │   ├── UserMapper.java
+│       │   │   ├── MarkdownDocMapper.java
+│       │   │   ├── JsonRecordMapper.java
+│       │   │   └── OperationLogMapper.java
 │       │   ├── service/
 │       │   │   ├── AuthService.java
 │       │   │   ├── MarkdownService.java
@@ -173,9 +174,10 @@ App.vue
 ### Markdown 编辑器功能
 
 **编辑**
-- 左右分栏：左侧编辑区 + 右侧实时预览
+- 左右分栏：左侧 CodeMirror 6 编辑器（语法高亮、行号）+ 右侧 markdown-it 实时预览
 - 工具栏按钮：加粗、斜体、H1、H2、H3、链接、图片（手动输入URL）、无序列表、有序列表、代码块、表格、公式
-- 点击工具栏在光标处插入/包裹对应 Markdown 语法
+- 点击工具栏在 CodeMirror 光标处插入/包裹对应 Markdown 语法
+- CodeMirror 6 扩展：markdown 语法高亮、行号显示、自动补全括号
 
 **数学公式**
 - KaTeX 渲染，支持行内公式 `$...$` 和块级公式 `$$...$$`
@@ -190,7 +192,7 @@ App.vue
 
 **导出**
 - 导出 `.md` 文件（原始 Markdown 文本下载）
-- 导出 HTML（marked 渲染后的完整 HTML 页面下载）
+- 导出 HTML（markdown-it 渲染后的完整 HTML 页面下载）
 - PDF 不在本期范围（可用浏览器打印功能替代）
 
 **保存与同步**
