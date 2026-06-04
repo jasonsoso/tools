@@ -15,9 +15,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
+      # logic-delete not used in current scope
 
 jwt:
   secret: tools-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
