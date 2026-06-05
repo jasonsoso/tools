@@ -268,44 +268,54 @@ function cycleViewMode() {
 </script>
 
 <template>
-  <div class="flex gap-5 h-[calc(100vh-7rem)]">
-    <!-- Left sidebar — Document list -->
-    <!-- Narrow strip (collapsed) -->
-    <div
-      v-if="leftCollapsed"
-      class="sidebar-strip"
-      @click="toggleLeft"
-      title="展开文档列表"
-    >
-      <span class="sidebar-strip-icon">📄</span>
-      <span class="sidebar-strip-count">{{ docCount }}</span>
-      <span class="sidebar-strip-label">文档</span>
-    </div>
+  <div
+    ref="fullscreenRoot"
+    :class="[
+      'flex gap-5',
+      isFullscreen
+        ? 'fixed inset-0 z-50 bg-white p-4'
+        : 'h-[calc(100vh-7rem)]'
+    ]"
+  >
+    <!-- Left sidebar — Document list (hidden in fullscreen) -->
+    <template v-if="!isFullscreen">
+      <!-- Narrow strip (collapsed) -->
+      <div
+        v-if="leftCollapsed"
+        class="sidebar-strip"
+        @click="toggleLeft"
+        title="展开文档列表"
+      >
+        <span class="sidebar-strip-icon">📄</span>
+        <span class="sidebar-strip-count">{{ docCount }}</span>
+        <span class="sidebar-strip-label">文档</span>
+      </div>
 
-    <!-- Full panel (expanded) -->
-    <div v-else class="sidebar-panel" style="width: 208px;">
-      <DocumentList
-        :documents="store.documents"
-        :current-id="docId"
-        :loading="store.loading"
-        @select="(id: number) => router.push(`/markdown/${id}`)"
-        @new="router.push('/markdown'); store.resetCurrent(); title = ''; content = ''; updatePreview()"
-      />
-    </div>
+      <!-- Full panel (expanded) -->
+      <div v-else class="sidebar-panel" style="width: 208px;">
+        <DocumentList
+          :documents="store.documents"
+          :current-id="docId"
+          :loading="store.loading"
+          @select="(id: number) => router.push(`/markdown/${id}`)"
+          @new="router.push('/markdown'); store.resetCurrent(); title = ''; content = ''; updatePreview()"
+        />
+      </div>
 
-    <!-- Left collapse toggle button -->
-    <button
-      class="collapse-toggle"
-      @click="toggleLeft"
-      :title="leftCollapsed ? '展开文档列表' : '折叠文档列表'"
-    >
-      {{ leftCollapsed ? '▶' : '◀' }}
-    </button>
+      <!-- Left collapse toggle button -->
+      <button
+        class="collapse-toggle"
+        @click="toggleLeft"
+        :title="leftCollapsed ? '展开文档列表' : '折叠文档列表'"
+      >
+        {{ leftCollapsed ? '▶' : '◀' }}
+      </button>
+    </template>
 
     <!-- Main -->
-    <div class="flex-1 flex flex-col gap-3 min-w-0">
-      <!-- Header row -->
-      <div class="flex items-center gap-3">
+    <div class="flex-1 flex flex-col min-w-0" :class="isFullscreen ? 'gap-2' : 'gap-3'">
+      <!-- Header row (hidden in fullscreen) -->
+      <div v-if="!isFullscreen" class="flex items-center gap-3">
         <input
           v-model="title"
           type="text"
@@ -338,10 +348,7 @@ function cycleViewMode() {
         <!-- Editor -->
         <div
           v-show="viewMode !== 'preview'"
-          :class="[
-            'card overflow-hidden p-0 min-h-0',
-            viewMode === 'edit' ? 'flex-1' : 'flex-1'
-          ]"
+          class="card overflow-hidden p-0 min-h-0 flex-1"
         >
           <div ref="editorContainer" class="h-full"></div>
         </div>
@@ -350,16 +357,14 @@ function cycleViewMode() {
         <div
           v-show="viewMode !== 'edit'"
           ref="previewScrollRef"
-          :class="[
-            'card overflow-auto p-6 min-h-0',
-            viewMode === 'preview' ? 'flex-1' : 'flex-1'
-          ]"
+          class="card overflow-auto p-6 min-h-0 flex-1"
         >
           <MdPreview :html="htmlPreview" />
         </div>
 
-        <!-- Right collapse toggle button -->
+        <!-- Right collapse toggle button (hidden in fullscreen) -->
         <button
+          v-if="!isFullscreen"
           class="collapse-toggle"
           @click="toggleRight"
           :title="rightCollapsed ? '展开目录' : '折叠目录'"
@@ -369,23 +374,25 @@ function cycleViewMode() {
       </div>
     </div>
 
-    <!-- Right sidebar — Outline -->
-    <!-- Narrow strip (collapsed) -->
-    <div
-      v-if="rightCollapsed"
-      class="sidebar-strip"
-      @click="toggleRight"
-      title="展开目录"
-    >
-      <span class="sidebar-strip-icon">📑</span>
-      <span class="sidebar-strip-count">{{ outlineCount }}</span>
-      <span class="sidebar-strip-label">目录</span>
-    </div>
+    <!-- Right sidebar — Outline (hidden in fullscreen) -->
+    <template v-if="!isFullscreen">
+      <!-- Narrow strip (collapsed) -->
+      <div
+        v-if="rightCollapsed"
+        class="sidebar-strip"
+        @click="toggleRight"
+        title="展开目录"
+      >
+        <span class="sidebar-strip-icon">📑</span>
+        <span class="sidebar-strip-count">{{ outlineCount }}</span>
+        <span class="sidebar-strip-label">目录</span>
+      </div>
 
-    <!-- Full panel (expanded) -->
-    <div v-else class="sidebar-panel" style="width: 192px;">
-      <MdOutline :items="outline" />
-    </div>
+      <!-- Full panel (expanded) -->
+      <div v-else class="sidebar-panel" style="width: 192px;">
+        <MdOutline :items="outline" />
+      </div>
+    </template>
 
     <!-- Table modal -->
     <TableEditorModal
