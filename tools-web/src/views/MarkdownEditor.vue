@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMarkdownStore } from '@/stores/markdown'
 import DocumentList from '@/components/DocumentList.vue'
@@ -26,11 +26,68 @@ const outline = ref<OutlineItem[]>([])
 const saving = ref(false)
 const saveError = ref('')
 const showTableModal = ref(false)
+const viewMode = ref<'edit' | 'split' | 'preview'>('split')
+
+// ---- Collapsible sidebars ----
+const LS_KEY_LEFT = 'md-editor-left-collapsed'
+const LS_KEY_RIGHT = 'md-editor-right-collapsed'
+
+const leftCollapsed = ref(localStorage.getItem(LS_KEY_LEFT) === 'true')
+const rightCollapsed = ref(localStorage.getItem(LS_KEY_RIGHT) === 'true')
+
+function toggleLeft() {
+  leftCollapsed.value = !leftCollapsed.value
+  localStorage.setItem(LS_KEY_LEFT, String(leftCollapsed.value))
+}
+
+function toggleRight() {
+  rightCollapsed.value = !rightCollapsed.value
+  localStorage.setItem(LS_KEY_RIGHT, String(rightCollapsed.value))
+}
+
+const docCount = computed(() => store.documents.length)
+const outlineCount = computed(() => outline.value.length)
 
 let editorView: EditorView | null = null
 const editorContainer = ref<HTMLDivElement>()
+const previewScrollRef = ref<HTMLDivElement>()
 
 const docId = computed(() => route.params.id ? Number(route.params.id) : null)
+
+// ---- Scroll sync between editor and preview ----
+let syncingScroll = false
+
+function setupScrollSync() {
+  if (!editorView || !previewScrollRef.value) return
+
+  const editorScroll = editorView.scrollDOM
+  const previewScroll = previewScrollRef.value
+
+  function syncEditorToPreview() {
+    if (syncingScroll) return
+    syncingScroll = true
+    const ratio = editorScroll.scrollTop / (editorScroll.scrollHeight - editorScroll.clientHeight)
+    previewScroll.scrollTop = ratio * (previewScroll.scrollHeight - previewScroll.clientHeight)
+    requestAnimationFrame(() => { syncingScroll = false })
+  }
+
+  function syncPreviewToEditor() {
+    if (syncingScroll) return
+    syncingScroll = true
+    const ratio = previewScroll.scrollTop / (previewScroll.scrollHeight - previewScroll.clientHeight)
+    editorScroll.scrollTop = ratio * (editorScroll.scrollHeight - editorScroll.clientHeight)
+    requestAnimationFrame(() => { syncingScroll = false })
+  }
+
+  editorScroll.addEventListener('scroll', syncEditorToPreview, { passive: true })
+  previewScroll.addEventListener('scroll', syncPreviewToEditor, { passive: true })
+}
+
+const viewModeLabels: Record<string, { label: string; icon: string }> = {
+  edit: { label: '编辑', icon: '📝' },
+  split: { label: '分屏', icon: '⬌' },
+  preview: { label: '预览', icon: '👁' },
+}
 
 /** 加载指定文档到编辑器 */
 function loadDocToEditor(id: number) {
@@ -62,6 +119,7 @@ function handleToolbarAction(action: string) {
   switch (action) {
     case 'bold': insertMarkdown('**$1**'); break
     case 'italic': insertMarkdown('*$1*'); break
+    case 'strikethrough': insertMarkdown('~~$1~~'); break
     case 'h1': insertMarkdown('# $1'); break
     case 'h2': insertMarkdown('## $1'); break
     case 'h3': insertMarkdown('### $1'); break
@@ -69,9 +127,12 @@ function handleToolbarAction(action: string) {
     case 'image': insertMarkdown('![$1](url)'); break
     case 'ul': insertMarkdown('- $1'); break
     case 'ol': insertMarkdown('1. $1'); break
+    case 'task': insertMarkdown('- [ ] $1'); break
+    case 'quote': insertMarkdown('> $1'); break
     case 'code': insertMarkdown('```\n$1\n```'); break
     case 'formula': insertMarkdown('$$1$'); break
     case 'table': showTableModal.value = true; break
+    case 'hr': insertMarkdown('\n---\n'); break
   }
 }
 
@@ -106,17 +167,27 @@ onMounted(() => {
           basicSetup,
           markdown(),
           keymap.of([indentWithTab]),
+          EditorView.lineWrapping,
           updateListener
         ]
       }),
       parent: editorContainer.value
     })
+
+    // Setup scroll sync after editor is mounted
+    requestAnimationFrame(() => setupScrollSync())
   }
 
   if (docId.value) {
     loadDocToEditor(docId.value)
   }
   store.loadList()
+
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 watch(content, () => {
@@ -128,7 +199,6 @@ watch(docId, (newId) => {
   if (newId) {
     loadDocToEditor(newId)
   } else {
-    // 切换到新建模式：清空编辑器和预览
     title.value = ''
     content.value = ''
     if (editorView) {
@@ -167,10 +237,16 @@ function handleKeydown(e: KeyboardEvent) {
     handleSave()
   }
 }
+
+function cycleViewMode() {
+  const modes: Array<'edit' | 'split' | 'preview'> = ['edit', 'split', 'preview']
+  const i = modes.indexOf(viewMode.value)
+  viewMode.value = modes[(i + 1) % 3]
+}
 </script>
 
 <template>
-  <div class="flex gap-5 h-[calc(100vh-7rem)]" @keydown="handleKeydown">
+  <div class="flex gap-5 h-[calc(100vh-7rem)]">
     <!-- Sidebar -->
     <DocumentList
       :documents="store.documents"
@@ -191,6 +267,17 @@ function handleKeydown(e: KeyboardEvent) {
           class="flex-1 text-base font-medium px-4 py-2.5 bg-white border border-black/[0.06] rounded-xl text-zinc-900 placeholder:text-zinc-400 outline-none transition-all duration-200 focus:border-indigo-300 focus:shadow-[0_0_0_3px_rgba(99,102,241,.06)]"
         />
         <span v-if="saveError" class="text-xs text-red-500 whitespace-nowrap">{{ saveError }}</span>
+
+        <!-- View mode toggle -->
+        <button
+          @click="cycleViewMode"
+          class="btn-secondary text-xs"
+          :title="viewModeLabels[viewMode].label + '模式'"
+        >
+          {{ viewModeLabels[viewMode].icon }}
+          {{ viewModeLabels[viewMode].label }}
+        </button>
+
         <button @click="handleSave" :disabled="saving" class="btn-primary">
           {{ saving ? '保存中...' : '保存' }}
         </button>
@@ -203,17 +290,30 @@ function handleKeydown(e: KeyboardEvent) {
       <!-- Editor + Preview split -->
       <div class="flex-1 flex gap-4 min-h-0">
         <!-- Editor -->
-        <div class="flex-1 card overflow-hidden p-0">
+        <div
+          v-show="viewMode !== 'preview'"
+          :class="[
+            'card overflow-hidden p-0 min-h-0',
+            viewMode === 'edit' ? 'flex-1' : 'flex-1'
+          ]"
+        >
           <div ref="editorContainer" class="h-full"></div>
         </div>
 
         <!-- Preview -->
-        <div class="flex-1 card overflow-auto p-5">
+        <div
+          v-show="viewMode !== 'edit'"
+          ref="previewScrollRef"
+          :class="[
+            'card overflow-auto p-6 min-h-0',
+            viewMode === 'preview' ? 'flex-1' : 'flex-1'
+          ]"
+        >
           <MdPreview :html="htmlPreview" />
         </div>
 
-        <!-- Outline -->
-        <div class="w-48 flex-shrink-0">
+        <!-- Outline (only visible in split mode) -->
+        <div v-show="viewMode === 'split'" class="w-48 flex-shrink-0">
           <MdOutline :items="outline" />
         </div>
       </div>
