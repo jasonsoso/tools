@@ -7,12 +7,12 @@ tools-server/    Spring Boot 3.2 后端 (Java 17, Maven, MySQL)
 tools-web/       Vue 3 前端 (Vite, TypeScript)
 ```
 
-**核心架构：** Nginx 反代 → 前端静态文件 + `/api` 代理到后端 `:8080`
+**核心架构：** Nginx 反代 → 前端静态文件 + `/api` 代理到后端 `:8081`
 
 ```
 用户 → Nginx (:80)
          ├─ /               → 前端静态文件 (dist/)
-         └─ /api/*          → 后端 Spring Boot (:8080)
+         └─ /api/*          → 后端 Spring Boot (:8081)
 ```
 
 ## 1. 环境准备（CentOS 服务器）
@@ -161,7 +161,7 @@ spring:
     hibernate:
       ddl-auto: none
 server:
-  port: 8080
+  port: 8081
 EOF
 ```
 
@@ -171,7 +171,7 @@ EOF
 cat > /etc/nginx/conf.d/tools.conf << 'EOF'
 # 后端 API 代理 — upstream 定义
 upstream tools_backend {
-    server 127.0.0.1:8080;
+    server 127.0.0.1:8081;
     keepalive 64;
 }
 
@@ -262,8 +262,8 @@ firewall-cmd --permanent --add-port=80/tcp
 # 如果 SSH 端口不是 22，确保 22 开放
 firewall-cmd --permanent --add-port=22/tcp
 
-# 8080 不对外暴露（仅 Nginx 通过 localhost 访问）
-# 不需要开放 8080
+# 8081 不对外暴露（仅 Nginx 通过 localhost 访问）
+# 不需要开放 8081
 
 # 应用
 firewall-cmd --reload
@@ -282,7 +282,7 @@ curl -I http://localhost
 
 # 2. 检查后端
 systemctl status tools-backend
-curl http://localhost:8080/api/auth/login -H "Content-Type: application/json" -d '{"username":"test","password":"test"}'
+curl http://localhost:8081/api/auth/login -H "Content-Type: application/json" -d '{"username":"test","password":"test"}'
 # 预期: JSON 响应（即使是 401，说明后端正常运行）
 
 # 3. 检查 API 代理
