@@ -15,7 +15,18 @@ const input = ref('')
 const result = ref('')
 const error = ref('')
 const copied = ref(false)
-const showTree = ref(true)
+const showTree = ref(false)
+
+// ---- Collapsible sidebar ----
+const LS_KEY_JSON_LEFT = 'json-editor-left-collapsed'
+const leftCollapsed = ref(localStorage.getItem(LS_KEY_JSON_LEFT) === 'true')
+
+function toggleLeft() {
+  leftCollapsed.value = !leftCollapsed.value
+  localStorage.setItem(LS_KEY_JSON_LEFT, String(leftCollapsed.value))
+}
+
+const recordCount = computed(() => store.records.length)
 
 const recordId = computed(() => route.params.id ? Number(route.params.id) : null)
 
@@ -118,14 +129,38 @@ async function handleDelete() {
 
 <template>
   <div class="flex gap-5 h-[calc(100vh-7rem)]">
-    <!-- Sidebar -->
-    <RecordList
-      :records="store.records"
-      :current-id="recordId"
-      :loading="store.loading"
-      @select="(id: number) => router.push(`/json/${id}`)"
-      @new="router.push('/json'); store.resetCurrent(); name = ''; input = ''; result = ''"
-    />
+    <!-- Left sidebar — Record list -->
+    <!-- Narrow strip (collapsed) -->
+    <div
+      v-if="leftCollapsed"
+      class="sidebar-strip"
+      @click="toggleLeft"
+      title="展开记录列表"
+    >
+      <span class="sidebar-strip-icon">📋</span>
+      <span class="sidebar-strip-count">{{ recordCount }}</span>
+      <span class="sidebar-strip-label">记录</span>
+    </div>
+
+    <!-- Full panel (expanded) -->
+    <div v-else class="sidebar-panel" style="width: 208px;">
+      <RecordList
+        :records="store.records"
+        :current-id="recordId"
+        :loading="store.loading"
+        @select="(id: number) => router.push(`/json/${id}`)"
+        @new="router.push('/json'); store.resetCurrent(); name = ''; input = ''; result = ''"
+      />
+    </div>
+
+    <!-- Left collapse toggle button -->
+    <button
+      class="collapse-toggle"
+      @click="toggleLeft"
+      :title="leftCollapsed ? '展开记录列表' : '折叠记录列表'"
+    >
+      {{ leftCollapsed ? '▶' : '◀' }}
+    </button>
 
     <!-- Main -->
     <div class="flex-1 flex flex-col gap-3 min-w-0">
