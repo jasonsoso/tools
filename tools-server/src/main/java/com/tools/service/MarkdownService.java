@@ -1,11 +1,14 @@
 package com.tools.service;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.MarkdownDocDto;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.entity.MarkdownDoc;
 import com.tools.entity.OperationLog;
 import com.tools.repository.MarkdownDocRepository;
 import com.tools.repository.OperationLogRepository;
+import com.tools.vo.converter.MarkdownDocConverter;
+import com.tools.vo.req.MarkdownDocReqVO;
+import com.tools.vo.resp.MarkdownDocRespVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,22 +21,27 @@ public class MarkdownService {
     private final MarkdownDocRepository docRepository;
     private final OperationLogRepository logRepository;
 
-    public ApiResponse<List<MarkdownDoc>> listByUser(Long userId) {
-        return ApiResponse.success(docRepository.findByUserIdOrderByUpdatedAtDesc(userId));
+    public List<MarkdownDocRespVO> listByUser(Long userId) {
+        List<MarkdownDoc> docs = docRepository.findByUserIdOrderByUpdatedAtDesc(userId);
+        return MarkdownDocConverter.INSTANCE.toRespVOList(docs);
     }
 
-    public ApiResponse<MarkdownDoc> getById(Long id, Long userId) {
+    public MarkdownDocRespVO getById(Long id, Long userId) {
         MarkdownDoc doc = docRepository.findById(id);
-        if (doc == null) return ApiResponse.error(404, "文档不存在");
-        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权访问此文档");
-        return ApiResponse.success(doc);
+        if (doc == null) {
+            throw new BusinessException(ErrorCode.DOC_NOT_FOUND);
+        }
+        if (!doc.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        return MarkdownDocConverter.INSTANCE.toRespVO(doc);
     }
 
-    public ApiResponse<MarkdownDoc> create(MarkdownDocDto dto, Long userId) {
+    public MarkdownDocRespVO create(MarkdownDocReqVO req, Long userId) {
         MarkdownDoc doc = new MarkdownDoc();
         doc.setUserId(userId);
-        doc.setTitle(dto.getTitle() != null ? dto.getTitle() : "未命名文档");
-        doc.setContent(dto.getContent() != null ? dto.getContent() : "");
+        doc.setTitle(req.getTitle());
+        doc.setContent(req.getContent() != null ? req.getContent() : "");
         docRepository.save(doc);
 
         OperationLog log = new OperationLog();
@@ -43,15 +51,23 @@ public class MarkdownService {
         log.setDetail("创建文档：" + doc.getTitle());
         logRepository.save(log);
 
-        return ApiResponse.success(doc);
+        return MarkdownDocConverter.INSTANCE.toRespVO(doc);
     }
 
-    public ApiResponse<MarkdownDoc> update(Long id, MarkdownDocDto dto, Long userId) {
+    public MarkdownDocRespVO update(Long id, MarkdownDocReqVO req, Long userId) {
         MarkdownDoc doc = docRepository.findById(id);
-        if (doc == null) return ApiResponse.error(404, "文档不存在");
-        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权修改此文档");
-        if (dto.getTitle() != null) doc.setTitle(dto.getTitle());
-        if (dto.getContent() != null) doc.setContent(dto.getContent());
+        if (doc == null) {
+            throw new BusinessException(ErrorCode.DOC_NOT_FOUND);
+        }
+        if (!doc.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_MODIFY);
+        }
+        if (req.getTitle() != null) {
+            doc.setTitle(req.getTitle());
+        }
+        if (req.getContent() != null) {
+            doc.setContent(req.getContent());
+        }
         docRepository.update(doc);
 
         OperationLog log = new OperationLog();
@@ -61,13 +77,17 @@ public class MarkdownService {
         log.setDetail("更新文档：" + doc.getTitle());
         logRepository.save(log);
 
-        return ApiResponse.success(doc);
+        return MarkdownDocConverter.INSTANCE.toRespVO(doc);
     }
 
-    public ApiResponse<Void> delete(Long id, Long userId) {
+    public void delete(Long id, Long userId) {
         MarkdownDoc doc = docRepository.findById(id);
-        if (doc == null) return ApiResponse.error(404, "文档不存在");
-        if (!doc.getUserId().equals(userId)) return ApiResponse.error(403, "无权删除此文档");
+        if (doc == null) {
+            throw new BusinessException(ErrorCode.DOC_NOT_FOUND);
+        }
+        if (!doc.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_DELETE);
+        }
         docRepository.deleteById(id);
 
         OperationLog log = new OperationLog();
@@ -76,7 +96,5 @@ public class MarkdownService {
         log.setAction("DELETE");
         log.setDetail("删除文档：" + doc.getTitle());
         logRepository.save(log);
-
-        return ApiResponse.success(null);
     }
 }

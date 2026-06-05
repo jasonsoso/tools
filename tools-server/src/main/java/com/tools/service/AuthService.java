@@ -1,12 +1,13 @@
 package com.tools.service;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.LoginRequest;
-import com.tools.dto.LoginResponse;
-import com.tools.dto.RegisterRequest;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.entity.User;
 import com.tools.repository.UserRepository;
 import com.tools.security.JwtTokenProvider;
+import com.tools.vo.req.LoginReqVO;
+import com.tools.vo.req.RegisterReqVO;
+import com.tools.vo.resp.LoginRespVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,12 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public ApiResponse<LoginResponse> register(RegisterRequest req) {
+    public LoginRespVO register(RegisterReqVO req) {
         if (userRepository.findByUsername(req.getUsername()) != null) {
-            return ApiResponse.error(400, "用户名已存在");
+            throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
         if (userRepository.findByEmail(req.getEmail()) != null) {
-            return ApiResponse.error(400, "邮箱已被注册");
+            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
         }
 
         User user = new User();
@@ -35,24 +36,20 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
-
-        LoginResponse loginResponse = new LoginResponse(token, user.getId(), user.getUsername());
-        return ApiResponse.success(loginResponse);
+        return new LoginRespVO(token, user.getId(), user.getUsername());
     }
 
-    public ApiResponse<LoginResponse> login(LoginRequest req) {
+    public LoginRespVO login(LoginReqVO req) {
         User user = userRepository.findByUsername(req.getUsername());
         if (user == null) {
-            return ApiResponse.error(401, "用户名或密码错误");
+            throw new BusinessException(ErrorCode.BAD_CREDENTIALS);
         }
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
-            return ApiResponse.error(401, "用户名或密码错误");
+            throw new BusinessException(ErrorCode.BAD_CREDENTIALS);
         }
 
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
-
-        LoginResponse loginResponse = new LoginResponse(token, user.getId(), user.getUsername());
-        return ApiResponse.success(loginResponse);
+        return new LoginRespVO(token, user.getId(), user.getUsername());
     }
 }

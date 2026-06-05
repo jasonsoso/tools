@@ -1,11 +1,13 @@
 package com.tools.service;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.MarkdownDocDto;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.entity.MarkdownDoc;
 import com.tools.entity.OperationLog;
 import com.tools.repository.MarkdownDocRepository;
 import com.tools.repository.OperationLogRepository;
+import com.tools.vo.req.MarkdownDocReqVO;
+import com.tools.vo.resp.MarkdownDocRespVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -33,9 +36,9 @@ class MarkdownServiceTest {
 
     @Test
     void shouldCreateDocumentAndLog() {
-        MarkdownDocDto dto = new MarkdownDocDto();
-        dto.setTitle("Test Doc");
-        dto.setContent("# Hello");
+        MarkdownDocReqVO req = new MarkdownDocReqVO();
+        req.setTitle("Test Doc");
+        req.setContent("# Hello");
 
         doAnswer(inv -> {
             MarkdownDoc doc = inv.getArgument(0);
@@ -43,11 +46,10 @@ class MarkdownServiceTest {
             return null;
         }).when(docRepository).save(any(MarkdownDoc.class));
 
-        ApiResponse<MarkdownDoc> result = markdownService.create(dto, 1L);
+        MarkdownDocRespVO resp = markdownService.create(req, 1L);
 
-        assertThat(result.getCode()).isEqualTo(200);
-        assertThat(result.getData().getUserId()).isEqualTo(1L);
-        assertThat(result.getData().getTitle()).isEqualTo("Test Doc");
+        assertThat(resp.getUserId()).isEqualTo(1L);
+        assertThat(resp.getTitle()).isEqualTo("Test Doc");
 
         ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
         verify(logRepository).save(logCaptor.capture());
@@ -64,9 +66,9 @@ class MarkdownServiceTest {
 
         when(docRepository.findByUserIdOrderByUpdatedAtDesc(1L)).thenReturn(List.of(doc1));
 
-        ApiResponse<List<MarkdownDoc>> result = markdownService.listByUser(1L);
-        assertThat(result.getData()).hasSize(1);
-        assertThat(result.getData().get(0).getTitle()).isEqualTo("User1 Doc");
+        List<MarkdownDocRespVO> result = markdownService.listByUser(1L);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle()).isEqualTo("User1 Doc");
     }
 
     @Test
@@ -78,14 +80,17 @@ class MarkdownServiceTest {
 
         when(docRepository.findById(1L)).thenReturn(doc);
 
-        ApiResponse<MarkdownDoc> result = markdownService.getById(1L, 1L);
-        assertThat(result.getCode()).isEqualTo(403);
+        assertThatThrownBy(() -> markdownService.getById(1L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN.getCode());
     }
 
     @Test
     void shouldReturn404ForMissingDoc() {
         when(docRepository.findById(999L)).thenReturn(null);
-        ApiResponse<MarkdownDoc> result = markdownService.getById(999L, 1L);
-        assertThat(result.getCode()).isEqualTo(404);
+
+        assertThatThrownBy(() -> markdownService.getById(999L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", ErrorCode.DOC_NOT_FOUND.getCode());
     }
 }

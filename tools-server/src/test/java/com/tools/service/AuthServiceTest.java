@@ -1,12 +1,13 @@
 package com.tools.service;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.LoginRequest;
-import com.tools.dto.LoginResponse;
-import com.tools.dto.RegisterRequest;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.entity.User;
 import com.tools.repository.UserRepository;
 import com.tools.security.JwtTokenProvider;
+import com.tools.vo.req.LoginReqVO;
+import com.tools.vo.req.RegisterReqVO;
+import com.tools.vo.resp.LoginRespVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -36,7 +38,7 @@ class AuthServiceTest {
 
     @Test
     void shouldRegisterSuccessfully() {
-        RegisterRequest req = new RegisterRequest();
+        RegisterReqVO req = new RegisterReqVO();
         req.setUsername("newuser");
         req.setEmail("new@example.com");
         req.setPassword("password123");
@@ -51,18 +53,17 @@ class AuthServiceTest {
         }).when(userRepository).save(any(User.class));
         when(jwtTokenProvider.generateToken(100L, "newuser")).thenReturn("jwt-token-123");
 
-        ApiResponse<LoginResponse> response = authService.register(req);
+        LoginRespVO resp = authService.register(req);
 
-        assertThat(response.getCode()).isEqualTo(200);
-        assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getToken()).isEqualTo("jwt-token-123");
-        assertThat(response.getData().getUsername()).isEqualTo("newuser");
-        assertThat(response.getData().getUserId()).isEqualTo(100L);
+        assertThat(resp).isNotNull();
+        assertThat(resp.getToken()).isEqualTo("jwt-token-123");
+        assertThat(resp.getUsername()).isEqualTo("newuser");
+        assertThat(resp.getUserId()).isEqualTo(100L);
     }
 
     @Test
     void shouldRejectDuplicateUsername() {
-        RegisterRequest req = new RegisterRequest();
+        RegisterReqVO req = new RegisterReqVO();
         req.setUsername("existing");
         req.setEmail("new@example.com");
         req.setPassword("password123");
@@ -72,15 +73,15 @@ class AuthServiceTest {
 
         when(userRepository.findByUsername("existing")).thenReturn(existingUser);
 
-        ApiResponse<LoginResponse> response = authService.register(req);
-
-        assertThat(response.getCode()).isEqualTo(400);
-        assertThat(response.getMessage()).contains("用户名");
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", ErrorCode.USERNAME_EXISTS.getCode())
+                .hasMessageContaining("用户名");
     }
 
     @Test
     void shouldLoginSuccessfully() {
-        LoginRequest req = new LoginRequest();
+        LoginReqVO req = new LoginReqVO();
         req.setUsername("testuser");
         req.setPassword("password123");
 
@@ -93,18 +94,17 @@ class AuthServiceTest {
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
         when(jwtTokenProvider.generateToken(1L, "testuser")).thenReturn("jwt-token-456");
 
-        ApiResponse<LoginResponse> response = authService.login(req);
+        LoginRespVO resp = authService.login(req);
 
-        assertThat(response.getCode()).isEqualTo(200);
-        assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getToken()).isEqualTo("jwt-token-456");
-        assertThat(response.getData().getUserId()).isEqualTo(1L);
-        assertThat(response.getData().getUsername()).isEqualTo("testuser");
+        assertThat(resp).isNotNull();
+        assertThat(resp.getToken()).isEqualTo("jwt-token-456");
+        assertThat(resp.getUserId()).isEqualTo(1L);
+        assertThat(resp.getUsername()).isEqualTo("testuser");
     }
 
     @Test
     void shouldRejectWrongPassword() {
-        LoginRequest req = new LoginRequest();
+        LoginReqVO req = new LoginReqVO();
         req.setUsername("testuser");
         req.setPassword("wrongpassword");
 
@@ -116,9 +116,9 @@ class AuthServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(user);
         when(passwordEncoder.matches("wrongpassword", "encodedPassword")).thenReturn(false);
 
-        ApiResponse<LoginResponse> response = authService.login(req);
-
-        assertThat(response.getCode()).isEqualTo(401);
-        assertThat(response.getMessage()).contains("密码");
+        assertThatThrownBy(() -> authService.login(req))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", ErrorCode.BAD_CREDENTIALS.getCode())
+                .hasMessageContaining("密码");
     }
 }

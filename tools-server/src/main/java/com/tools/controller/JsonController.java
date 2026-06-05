@@ -1,10 +1,11 @@
 package com.tools.controller;
 
 import com.tools.common.ApiResponse;
-import com.tools.dto.JsonRecordDto;
-import com.tools.entity.JsonRecord;
 import com.tools.security.SecurityUtils;
 import com.tools.service.JsonService;
+import com.tools.vo.req.JsonRecordReqVO;
+import com.tools.vo.resp.JsonRecordRespVO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,27 +19,28 @@ public class JsonController {
     private final JsonService jsonService;
 
     @GetMapping
-    public ApiResponse<List<JsonRecord>> list() {
-        return jsonService.listByUser(SecurityUtils.getCurrentUserId());
+    public ApiResponse<List<JsonRecordRespVO>> list() {
+        return ApiResponse.success(jsonService.listByUser(SecurityUtils.getCurrentUserId()));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<JsonRecord> get(@PathVariable Long id) {
-        return jsonService.getById(id, SecurityUtils.getCurrentUserId());
+    public ApiResponse<JsonRecordRespVO> get(@PathVariable Long id) {
+        return ApiResponse.success(jsonService.getById(id, SecurityUtils.getCurrentUserId()));
     }
 
     @PostMapping
-    public ApiResponse<JsonRecord> create(@RequestBody JsonRecordDto dto) {
-        return jsonService.create(dto, SecurityUtils.getCurrentUserId());
+    public ApiResponse<JsonRecordRespVO> create(@Valid @RequestBody JsonRecordReqVO req) {
+        return ApiResponse.success(jsonService.create(req, SecurityUtils.getCurrentUserId()));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<JsonRecord> update(@PathVariable Long id, @RequestBody JsonRecordDto dto) {
-        return jsonService.update(id, dto, SecurityUtils.getCurrentUserId());
+    public ApiResponse<JsonRecordRespVO> update(@PathVariable Long id, @Valid @RequestBody JsonRecordReqVO req) {
+        return ApiResponse.success(jsonService.update(id, req, SecurityUtils.getCurrentUserId()));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        return jsonService.delete(id, SecurityUtils.getCurrentUserId());
+        jsonService.delete(id, SecurityUtils.getCurrentUserId());
+        return ApiResponse.success(null);
     }
 }

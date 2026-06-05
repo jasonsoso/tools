@@ -1,10 +1,10 @@
 package com.tools.controller;
 
 import com.tools.common.ApiResponse;
-import com.tools.dto.LoginRequest;
-import com.tools.dto.LoginResponse;
-import com.tools.dto.RegisterRequest;
 import com.tools.service.AuthService;
+import com.tools.vo.req.LoginReqVO;
+import com.tools.vo.req.RegisterReqVO;
+import com.tools.vo.resp.LoginRespVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,12 +20,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ApiResponse<LoginResponse> register(@Valid @RequestBody RegisterRequest req) {
-        return authService.register(req);
+    public ApiResponse<LoginRespVO> register(@Valid @RequestBody RegisterReqVO req) {
+        return ApiResponse.success(authService.register(req));
     }
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
-        return authService.login(req);
+    public ApiResponse<LoginRespVO> login(@Valid @RequestBody LoginReqVO req) {
+        return ApiResponse.success(authService.login(req));
     }
 }

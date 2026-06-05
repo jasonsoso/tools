@@ -24,6 +24,7 @@ const content = ref('')
 const htmlPreview = ref('')
 const outline = ref<OutlineItem[]>([])
 const saving = ref(false)
+const saveError = ref('')
 const showTableModal = ref(false)
 
 let editorView: EditorView | null = null
@@ -118,6 +119,11 @@ watch(content, () => {
 })
 
 async function handleSave() {
+  saveError.value = ''
+  if (!title.value.trim()) {
+    saveError.value = '文档标题不能为空'
+    return
+  }
   saving.value = true
   try {
     if (docId.value) {
@@ -156,8 +162,9 @@ function handleKeydown(e: KeyboardEvent) {
     <div class="flex-1 flex flex-col gap-2 min-w-0">
       <!-- Title -->
       <div class="flex items-center gap-3">
-        <input v-model="title" type="text" placeholder="文档标题"
+        <input v-model="title" type="text" placeholder="文档标题（必填）"
                class="flex-1 text-lg font-semibold px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+        <span v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</span>
         <button @click="handleSave" :disabled="saving"
                 class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50">
           {{ saving ? '保存中...' : '保存' }}

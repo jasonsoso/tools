@@ -1,10 +1,11 @@
 package com.tools.controller;
 
 import com.tools.common.ApiResponse;
-import com.tools.dto.MarkdownDocDto;
-import com.tools.entity.MarkdownDoc;
 import com.tools.security.SecurityUtils;
 import com.tools.service.MarkdownService;
+import com.tools.vo.req.MarkdownDocReqVO;
+import com.tools.vo.resp.MarkdownDocRespVO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,27 +19,28 @@ public class MarkdownController {
     private final MarkdownService markdownService;
 
     @GetMapping
-    public ApiResponse<List<MarkdownDoc>> list() {
-        return markdownService.listByUser(SecurityUtils.getCurrentUserId());
+    public ApiResponse<List<MarkdownDocRespVO>> list() {
+        return ApiResponse.success(markdownService.listByUser(SecurityUtils.getCurrentUserId()));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<MarkdownDoc> get(@PathVariable Long id) {
-        return markdownService.getById(id, SecurityUtils.getCurrentUserId());
+    public ApiResponse<MarkdownDocRespVO> get(@PathVariable Long id) {
+        return ApiResponse.success(markdownService.getById(id, SecurityUtils.getCurrentUserId()));
     }
 
     @PostMapping
-    public ApiResponse<MarkdownDoc> create(@RequestBody MarkdownDocDto dto) {
-        return markdownService.create(dto, SecurityUtils.getCurrentUserId());
+    public ApiResponse<MarkdownDocRespVO> create(@Valid @RequestBody MarkdownDocReqVO req) {
+        return ApiResponse.success(markdownService.create(req, SecurityUtils.getCurrentUserId()));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<MarkdownDoc> update(@PathVariable Long id, @RequestBody MarkdownDocDto dto) {
-        return markdownService.update(id, dto, SecurityUtils.getCurrentUserId());
+    public ApiResponse<MarkdownDocRespVO> update(@PathVariable Long id, @Valid @RequestBody MarkdownDocReqVO req) {
+        return ApiResponse.success(markdownService.update(id, req, SecurityUtils.getCurrentUserId()));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        return markdownService.delete(id, SecurityUtils.getCurrentUserId());
+        markdownService.delete(id, SecurityUtils.getCurrentUserId());
+        return ApiResponse.success(null);
     }
 }

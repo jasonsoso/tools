@@ -63,6 +63,11 @@ async function handleCopy() {
 }
 
 async function handleSave() {
+  error.value = ''
+  if (!name.value.trim()) {
+    error.value = '记录名称不能为空'
+    return
+  }
   if (!isValidJson(input.value)) {
     error.value = '请先修正 JSON 格式错误再保存'
     return
@@ -106,7 +111,7 @@ async function handleDelete() {
     <div class="flex-1 flex flex-col gap-3 min-w-0">
       <!-- Header -->
       <div class="flex items-center gap-3">
-        <input v-model="name" type="text" placeholder="记录名称"
+        <input v-model="name" type="text" placeholder="记录名称（必填）"
                class="flex-1 text-lg font-semibold px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
         <button @click="handleSave" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
           保存

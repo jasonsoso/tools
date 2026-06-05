@@ -1,9 +1,10 @@
 package com.tools.controller;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.MarkdownDocDto;
-import com.tools.entity.MarkdownDoc;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.service.MarkdownService;
+import com.tools.vo.req.MarkdownDocReqVO;
+import com.tools.vo.resp.MarkdownDocRespVO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,10 +36,10 @@ class MarkdownControllerTest {
     @Test
     @WithMockUser(username = "1")
     void shouldListDocuments() throws Exception {
-        MarkdownDoc doc = new MarkdownDoc();
-        doc.setId(1L);
-        doc.setTitle("Test");
-        when(markdownService.listByUser(anyLong())).thenReturn(ApiResponse.success(List.of(doc)));
+        MarkdownDocRespVO resp = new MarkdownDocRespVO();
+        resp.setId(1L);
+        resp.setTitle("Test");
+        when(markdownService.listByUser(anyLong())).thenReturn(List.of(resp));
 
         mockMvc.perform(get("/api/markdown"))
                 .andExpect(status().isOk())
@@ -49,10 +50,10 @@ class MarkdownControllerTest {
     @Test
     @WithMockUser(username = "1")
     void shouldCreateDocument() throws Exception {
-        MarkdownDoc saved = new MarkdownDoc();
-        saved.setId(1L);
-        saved.setTitle("New Doc");
-        when(markdownService.create(any(), anyLong())).thenReturn(ApiResponse.success(saved));
+        MarkdownDocRespVO resp = new MarkdownDocRespVO();
+        resp.setId(1L);
+        resp.setTitle("New Doc");
+        when(markdownService.create(any(), anyLong())).thenReturn(resp);
 
         mockMvc.perform(post("/api/markdown")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +65,8 @@ class MarkdownControllerTest {
     @Test
     @WithMockUser(username = "1")
     void shouldReturn404ForMissingDocument() throws Exception {
-        when(markdownService.getById(eq(999L), anyLong())).thenReturn(ApiResponse.error(404, "文档不存在"));
+        when(markdownService.getById(eq(999L), anyLong()))
+                .thenThrow(new BusinessException(ErrorCode.DOC_NOT_FOUND));
 
         mockMvc.perform(get("/api/markdown/999"))
                 .andExpect(status().isOk())

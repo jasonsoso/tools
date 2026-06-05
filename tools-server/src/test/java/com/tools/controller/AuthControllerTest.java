@@ -1,9 +1,9 @@
 package com.tools.controller;
 
 import com.tools.common.ApiResponse;
-import com.tools.dto.LoginRequest;
-import com.tools.dto.LoginResponse;
 import com.tools.service.AuthService;
+import com.tools.vo.req.LoginReqVO;
+import com.tools.vo.resp.LoginRespVO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,9 +32,8 @@ class AuthControllerTest {
 
     @Test
     void shouldReturnTokenOnSuccessfulLogin() throws Exception {
-        LoginResponse loginResponse = new LoginResponse("jwt-token-789", 1L, "testuser");
-        when(authService.login(any(LoginRequest.class)))
-                .thenReturn(ApiResponse.success(loginResponse));
+        LoginRespVO loginResp = new LoginRespVO("jwt-token-789", 1L, "testuser");
+        when(authService.login(any(LoginReqVO.class))).thenReturn(loginResp);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

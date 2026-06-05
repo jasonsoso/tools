@@ -1,11 +1,13 @@
 package com.tools.service;
 
-import com.tools.common.ApiResponse;
-import com.tools.dto.JsonRecordDto;
+import com.tools.common.BusinessException;
+import com.tools.common.ErrorCode;
 import com.tools.entity.JsonRecord;
 import com.tools.entity.OperationLog;
 import com.tools.repository.JsonRecordRepository;
 import com.tools.repository.OperationLogRepository;
+import com.tools.vo.req.JsonRecordReqVO;
+import com.tools.vo.resp.JsonRecordRespVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -32,27 +35,35 @@ class JsonServiceTest {
 
     @Test
     void shouldCreateRecordAndLog() {
-        JsonRecordDto dto = new JsonRecordDto();
-        dto.setName("test.json");
-        dto.setContent("{\"key\":\"value\"}");
+        JsonRecordReqVO req = new JsonRecordReqVO();
+        req.setName("test.json");
+        req.setContent("{\"key\":\"value\"}");
 
-        ApiResponse<JsonRecord> result = jsonService.create(dto, 1L);
+        doAnswer(inv -> {
+            JsonRecord rec = inv.getArgument(0);
+            rec.setId(1L);
+            rec.setUserId(1L);
+            rec.setName("test.json");
+            return null;
+        }).when(recordRepository).save(any(JsonRecord.class));
 
-        assertThat(result.getCode()).isEqualTo(200);
-        assertThat(result.getData().getUserId()).isEqualTo(1L);
+        JsonRecordRespVO resp = jsonService.create(req, 1L);
+
+        assertThat(resp.getUserId()).isEqualTo(1L);
         verify(recordRepository).save(any(JsonRecord.class));
         verify(logRepository).save(any(OperationLog.class));
     }
 
     @Test
     void shouldRejectInvalidJsonOnCreate() {
-        JsonRecordDto dto = new JsonRecordDto();
-        dto.setName("bad");
-        dto.setContent("not json");
+        JsonRecordReqVO req = new JsonRecordReqVO();
+        req.setName("bad");
+        req.setContent("not json");
 
-        ApiResponse<JsonRecord> result = jsonService.create(dto, 1L);
-        assertThat(result.getCode()).isEqualTo(400);
-        assertThat(result.getMessage()).contains("JSON");
+        assertThatThrownBy(() -> jsonService.create(req, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", ErrorCode.INVALID_JSON.getCode())
+                .hasMessageContaining("JSON");
         verify(recordRepository, never()).save(any());
     }
 
@@ -63,7 +74,7 @@ class JsonServiceTest {
         rec.setName("test");
         when(recordRepository.findByUserIdOrderByUpdatedAtDesc(1L)).thenReturn(List.of(rec));
 
-        ApiResponse<List<JsonRecord>> result = jsonService.listByUser(1L);
-        assertThat(result.getData()).hasSize(1);
+        List<JsonRecordRespVO> result = jsonService.listByUser(1L);
+        assertThat(result).hasSize(1);
     }
 }
