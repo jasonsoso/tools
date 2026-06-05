@@ -17,14 +17,12 @@ function handleLogout() {
         <router-link to="/" class="text-lg font-bold text-blue-600 hover:text-blue-700">
           工具包
         </router-link>
-        <template v-if="authStore.isLoggedIn">
-          <router-link to="/markdown" class="text-gray-600 hover:text-gray-900 text-sm">
-            Markdown 编辑器
-          </router-link>
-          <router-link to="/json" class="text-gray-600 hover:text-gray-900 text-sm">
-            JSON 格式化
-          </router-link>
-        </template>
+        <router-link to="/markdown" class="text-gray-600 hover:text-gray-900 text-sm">
+          Markdown 编辑器
+        </router-link>
+        <router-link to="/json" class="text-gray-600 hover:text-gray-900 text-sm">
+          JSON 格式化
+        </router-link>
       </div>
       <div class="flex items-center gap-4">
         <template v-if="authStore.isLoggedIn">

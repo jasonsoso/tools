@@ -19,20 +19,20 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('username', result.username)
   }
 
-  async function login(params: { username: string; password: string }) {
+  async function login(params: { username: string; password: string }, redirect?: string) {
     const res = await authApi.login(params)
     if (res.data.code === 200) {
       setAuth(res.data.data)
-      router.push('/')
+      router.push(redirect || '/')
     }
     return res.data
   }
 
-  async function register(params: { username: string; email: string; password: string }) {
+  async function register(params: { username: string; email: string; password: string }, redirect?: string) {
     const res = await authApi.register(params)
     if (res.data.code === 200) {
       setAuth(res.data.data)
-      router.push('/')
+      router.push(redirect || '/')
     }
     return res.data
   }
@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('userId')
     localStorage.removeItem('username')
-    router.push('/login')
+    router.push('/')
   }
 
   return { token, userId, username, isLoggedIn, setAuth, login, register, logout }

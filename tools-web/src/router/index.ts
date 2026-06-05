@@ -16,8 +16,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: () => import('@/views/HomePage.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/HomePage.vue')
     },
     {
       path: '/markdown',
@@ -49,9 +48,9 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
   if (to.meta.requiresAuth && !token) {
-    next('/login')
+    next({ path: '/login', query: { redirect: to.fullPath } })
   } else if ((to.path === '/login' || to.path === '/register') && token) {
-    next('/')
+    next(to.query.redirect || '/')
   } else {
     next()
   }

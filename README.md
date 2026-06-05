@@ -43,6 +43,7 @@ mvn spring-boot:run
 ```bash
 cd tools-web
 npm install
+# 进行启动前端
 npm run dev
 ```
 

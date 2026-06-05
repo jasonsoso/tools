@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+const route = useRoute()
 const authStore = useAuthStore()
 const username = ref('')
 const password = ref('')
@@ -12,7 +14,8 @@ async function handleLogin() {
   error.value = ''
   loading.value = true
   try {
-    const result = await authStore.login({ username: username.value, password: password.value })
+    const redirect = route.query.redirect as string | undefined
+    const result = await authStore.login({ username: username.value, password: password.value }, redirect)
     if (result.code !== 200) {
       error.value = result.message
     }
@@ -47,7 +50,7 @@ async function handleLogin() {
       </form>
       <p class="text-center text-sm text-gray-500 mt-4">
         还没有账号？
-        <router-link to="/register" class="text-blue-600 hover:underline">注册</router-link>
+        <router-link :to="{ path: '/register', query: { redirect: $route.query.redirect } }" class="text-blue-600 hover:underline">注册</router-link>
       </p>
     </div>
   </div>
