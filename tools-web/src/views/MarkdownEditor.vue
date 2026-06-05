@@ -336,11 +336,33 @@ function cycleViewMode() {
           <MdPreview :html="htmlPreview" />
         </div>
 
-        <!-- Outline (only visible in split mode) -->
-        <div v-show="viewMode === 'split'" class="w-48 flex-shrink-0">
-          <MdOutline :items="outline" />
-        </div>
+        <!-- Right collapse toggle button -->
+        <button
+          class="collapse-toggle"
+          @click="toggleRight"
+          :title="rightCollapsed ? '展开目录' : '折叠目录'"
+        >
+          {{ rightCollapsed ? '◀' : '▶' }}
+        </button>
       </div>
+    </div>
+
+    <!-- Right sidebar — Outline -->
+    <!-- Narrow strip (collapsed) -->
+    <div
+      v-if="rightCollapsed"
+      class="sidebar-strip"
+      @click="toggleRight"
+      title="展开目录"
+    >
+      <span class="sidebar-strip-icon">📑</span>
+      <span class="sidebar-strip-count">{{ outlineCount }}</span>
+      <span class="sidebar-strip-label">目录</span>
+    </div>
+
+    <!-- Full panel (expanded) -->
+    <div v-else class="sidebar-panel" style="width: 192px;">
+      <MdOutline :items="outline" />
     </div>
 
     <!-- Table modal -->
