@@ -78,7 +78,7 @@ EXIT;
 **初始化表结构：**
 
 ```bash
-mysql -u root -p tools_db < /opt/tools/tools-server/src/main/resources/db/schema.sql
+mysql -u root -p tools_db < /opt/project/tools-server/src/main/resources/db/schema.sql
 ```
 
 ### 1.4 安装 Nginx
@@ -130,16 +130,16 @@ npm run build
 ```bash
 # 在服务器上创建目录结构
 ssh root@YOUR_SERVER_IP
-mkdir -p /opt/tools/backend /opt/tools/frontend
+mkdir -p /opt/project/tools-server /opt/project/tools-web
 
 # 退出服务器，在本机执行上传
 exit
 
 # 上传后端 jar（PowerShell / Git Bash）
-scp tools-server/target/tools-server-0.0.1-SNAPSHOT.jar root@YOUR_SERVER_IP:/opt/tools/backend/
+scp tools-server/target/tools-server-0.0.1-SNAPSHOT.jar root@YOUR_SERVER_IP:/opt/project/tools-server/
 
 # 上传前端 dist
-scp -r tools-web/dist/* root@YOUR_SERVER_IP:/opt/tools/frontend/
+scp -r tools-web/dist/* root@YOUR_SERVER_IP:/opt/project/tools-web/
 ```
 
 ## 4. 服务器配置
@@ -151,7 +151,7 @@ scp -r tools-web/dist/* root@YOUR_SERVER_IP:/opt/tools/frontend/
 ```bash
 # 在服务器上
 ssh root@YOUR_SERVER_IP
-cat > /opt/tools/backend/application-prod.yml << 'EOF'
+cat > /opt/project/tools-server/application-prod.yml << 'EOF'
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/tools_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
@@ -181,7 +181,7 @@ TTL:  600
 ### 4.3 配置 Nginx
 
 ```bash
-cat > /etc/nginx/conf.d/tools.conf << 'EOF'
+cat > /usr/local/nginx/conf.d/tools.conf << 'EOF'
 # 后端 API 代理 — upstream 定义
 upstream tools_backend {
     server 127.0.0.1:8081;
@@ -198,14 +198,14 @@ server {
 
     # 前端静态文件
     location / {
-        root   /opt/tools/frontend;
+        root   /opt/project/tools-web;
         index  index.html;
         try_files $uri $uri/ /index.html;   # SPA 路由必需
     }
 
     # 静态资源缓存（JS/CSS/图片/字体）
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        root      /opt/tools/frontend;
+        root      /opt/project/tools-web;
         expires   30d;
         add_header Cache-Control "public, immutable";
     }
@@ -243,8 +243,8 @@ Wants=mysqld.service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/tools/backend
-ExecStart=/usr/bin/java -jar /opt/tools/backend/tools-server-0.0.1-SNAPSHOT.jar --spring.config.additional-location=/opt/tools/backend/application-prod.yml
+WorkingDirectory=/opt/project/tools-server
+ExecStart=/usr/bin/java -jar /opt/project/tools-server/tools-server-0.0.1-SNAPSHOT.jar --spring.config.additional-location=/opt/project/tools-server/application-prod.yml
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -316,11 +316,11 @@ journalctl -u tools-backend -f
 systemctl restart tools-backend
 
 # 更新前端（构建后上传覆盖）
-scp -r dist/* root@YOUR_SERVER_IP:/opt/tools/frontend/
+scp -r dist/* root@YOUR_SERVER_IP:/opt/project/tools-web/
 # 前端无需重启（静态文件），刷新浏览器即可
 
 # 更新后端
-scp tools-server-0.0.1-SNAPSHOT.jar root@YOUR_SERVER_IP:/opt/tools/backend/
+scp tools-server-0.0.1-SNAPSHOT.jar root@YOUR_SERVER_IP:/opt/project/tools-server/
 systemctl restart tools-backend
 ```
 
@@ -341,11 +341,11 @@ certbot renew --dry-run
 
 ```
 服务器部署目录:
-/opt/tools/
-├── backend/
+/opt/project/
+├── tools-server/
 │   ├── tools-server-0.0.1-SNAPSHOT.jar
 │   └── application-prod.yml
-└── frontend/
+└── tools-web/
     ├── index.html
     ├── assets/
     │   ├── *.js
