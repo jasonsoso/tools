@@ -72,10 +72,10 @@ tools-server/src/main/java/com/tools/
 
 ### 多环境
 
-| Profile | 数据库 | 端口 | 配置文件 |
+| Profile | 数据库 | 端口   | 配置文件 |
 |---------|--------|------|----------|
 | `dev`（默认激活） | H2 内存数据库 | 8081 | `application-dev.yml` |
-| 生产 | MySQL 8 | 8080 | `application.yml` |
+| 生产 | MySQL 8 | 8081 | `application.yml` |
 
 ### JWT 配置
 
@@ -158,7 +158,7 @@ dev 模式下 H2 数据库自动执行 `resources/db/schema-h2.sql` 建表。生
 # 开发模式（H2 内存数据库，端口 8081，无需 MySQL）
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-# 生产模式（MySQL，端口 8080）
+# 生产模式（MySQL，端口 8081）
 # 需先创建 tools_db 数据库
 mvn spring-boot:run
 ```

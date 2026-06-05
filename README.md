@@ -34,7 +34,7 @@ cd tools-server
 # 开发模式（H2 内存数据库，端口 8081）
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-# 生产模式（MySQL，端口 8080）
+# 生产模式（MySQL，端口 8081）
 mvn spring-boot:run
 ```
 
