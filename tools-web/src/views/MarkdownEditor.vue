@@ -48,6 +48,25 @@ function toggleRight() {
 const docCount = computed(() => store.documents.length)
 const outlineCount = computed(() => outline.value.length)
 
+// ---- Fullscreen mode ----
+const isFullscreen = ref(false)
+const fullscreenRoot = ref<HTMLDivElement>()
+
+function toggleFullscreen() {
+  if (!fullscreenRoot.value) return
+  if (isFullscreen.value) {
+    document.exitFullscreen()
+  } else {
+    fullscreenRoot.value.requestFullscreen().catch(() => {
+      // Browser denied fullscreen — ignore
+    })
+  }
+}
+
+function syncFullscreenState() {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
 let editorView: EditorView | null = null
 const editorContainer = ref<HTMLDivElement>()
 const previewScrollRef = ref<HTMLDivElement>()
@@ -133,6 +152,7 @@ function handleToolbarAction(action: string) {
     case 'formula': insertMarkdown('$$1$'); break
     case 'table': showTableModal.value = true; break
     case 'hr': insertMarkdown('\n---\n'); break
+    case 'fullscreen': toggleFullscreen(); break
   }
 }
 
@@ -184,10 +204,12 @@ onMounted(() => {
   store.loadList()
 
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('fullscreenchange', syncFullscreenState)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('fullscreenchange', syncFullscreenState)
 })
 
 watch(content, () => {
