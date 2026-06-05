@@ -1,0 +1,11 @@
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662024755}
+{"type":"click","text":"B\n      \n        目录仅在分屏模式出现\n        保持现有行为。编辑/预览模式只有左侧文档列表可折叠","choice":"split-only","id":null,"timestamp":1780662025629}
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662026237}
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662026455}
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662027268}
+{"type":"click","text":"B\n      \n        目录仅在分屏模式出现\n        保持现有行为。编辑/预览模式只有左侧文档列表可折叠","choice":"split-only","id":null,"timestamp":1780662027640}
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662028351}
+{"type":"click","text":"B\n      \n        目录仅在分屏模式出现\n        保持现有行为。编辑/预览模式只有左侧文档列表可折叠","choice":"split-only","id":null,"timestamp":1780662037224}
+{"type":"click","text":"A\n      \n        目录在所有模式都可用（推荐）\n        右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权","choice":"always","id":null,"timestamp":1780662037996}
+{"type":"click","text":"B\n      \n        每次默认展开\n        简单，每次进来都是展开状态，不引入持久化逻辑","choice":"forget","id":null,"timestamp":1780662044116}
+{"type":"click","text":"A\n      \n        记住到 localStorage\n        刷新页面、切换文档后折叠状态不变。用户体验连贯","choice":"remember","id":null,"timestamp":1780662044543}

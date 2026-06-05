@@ -1,0 +1,63 @@
+<h2>折叠后的侧栏状态</h2>
+<p class="subtitle">方案 A 已选定 — 折叠按钮在侧栏边缘。折叠后留什么？</p>
+
+<div class="options">
+  <div class="option" data-choice="strip" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>留窄条 (36px)</h3>
+      <p>折叠后显示竖排图标 + 文档数/标题数，hover 时浮出预览小窗</p>
+      <div style="margin-top:8px;background:#fafafa;border-radius:8px;padding:12px;display:flex;gap:12px;">
+        <div style="width:36px;background:#f0f0f0;border-radius:6px;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:10px;">
+          <span style="font-size:12px;">📄</span>
+          <span style="font-size:9px;color:#888;">5</span>
+        </div>
+        <div style="flex:1;background:#fff;border-radius:6px;border:1px solid #eee;height:100px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11px;">编辑区</div>
+        <div style="width:36px;background:#f0f0f0;border-radius:6px;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:10px;">
+          <span style="font-size:12px;">📑</span>
+          <span style="font-size:9px;color:#888;">3</span>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#6366f1;">➕ 始终可见状态信息（文档数、标题数），hover 可速览</div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="hidden" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>完全隐藏</h3>
+      <p>侧栏完全消失，只留边缘的按钮悬浮着。空间利用率最高</p>
+      <div style="margin-top:8px;background:#fafafa;border-radius:8px;padding:12px;display:flex;gap:8px;align-items:stretch;">
+        <div style="width:18px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <span style="font-size:8px;color:#999;">▶</span>
+        </div>
+        <div style="flex:1;background:#fff;border-radius:6px;border:1px solid #eee;height:100px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11px;">编辑区 — 最大化</div>
+        <div style="width:18px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <span style="font-size:8px;color:#999;">◀</span>
+        </div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#6366f1;">➕ 空间最大，但无法速览侧栏内容</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;">
+  <h3>过渡动画</h3>
+  <p class="subtitle">折叠/展开时的过渡效果</p>
+  <div class="options">
+    <div class="option" data-choice="smooth" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>平滑滑动</h3>
+        <p>侧栏宽度 transition 250ms ease，配合内容淡出</p>
+      </div>
+    </div>
+    <div class="option" data-choice="instant" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>即时切换</h3>
+        <p>瞬间收起/展开，无动画延迟 — 适合频繁切换</p>
+      </div>
+    </div>
+  </div>
+</div>

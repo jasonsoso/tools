@@ -1,0 +1,84 @@
+<h2>折叠 + 视图模式：如何协同？</h2>
+<p class="subtitle">两侧可独立折叠，与编辑/分屏/预览三档模式正交</p>
+
+<div class="mockup" style="margin-bottom:20px;">
+  <div class="mockup-header">核心逻辑：折叠 ✕ 视图模式 = 独立控制</div>
+  <div class="mockup-body" style="display:flex;flex-direction:column;gap:12px;">
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div style="padding:4px 10px;background:#f0f0f0;border-radius:4px;font-size:10px;white-space:nowrap;">📝 编辑模式</div>
+      <div style="display:flex;gap:4px;flex:1;">
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📄<br>5</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">▶</div>
+        <div style="flex:1;background:#fff;border:1px solid #eee;border-radius:4px;padding:6px;text-align:center;font-size:10px;color:#888;">编辑器 — 全宽</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">◀</div>
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📑<br>3</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div style="padding:4px 10px;background:#f0f0f0;border-radius:4px;font-size:10px;white-space:nowrap;">⬌ 分屏模式</div>
+      <div style="display:flex;gap:4px;flex:1;">
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📄<br>5</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">▶</div>
+        <div style="flex:1;background:#fff;border:1px solid #eee;border-radius:4px;padding:6px;text-align:center;font-size:10px;color:#888;">编辑器</div>
+        <div style="flex:1;background:#fafafa;border:1px solid #eee;border-radius:4px;padding:6px;text-align:center;font-size:10px;color:#888;">预览</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">◀</div>
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📑<br>3</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div style="padding:4px 10px;background:#f0f0f0;border-radius:4px;font-size:10px;white-space:nowrap;">👁 预览模式</div>
+      <div style="display:flex;gap:4px;flex:1;">
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📄<br>5</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">▶</div>
+        <div style="flex:1;background:#fafafa;border:1px solid #eee;border-radius:4px;padding:6px;text-align:center;font-size:10px;color:#888;">预览 — 全宽</div>
+        <div style="width:22px;background:#f0f0f0;border-radius:4px;font-size:8px;display:flex;align-items:center;justify-content:center;">◀</div>
+        <div style="width:36px;background:#f8f8f8;border-radius:4px;text-align:center;font-size:10px;padding:4px 0;">📑<br>3</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>关键决策：目录侧栏在编辑/预览模式下显示吗？</h3>
+  <p class="subtitle">目前目录只在分屏模式出现。折叠功能要不要也把它引入其他模式？</p>
+  <div class="options">
+    <div class="option" data-choice="always" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>目录在所有模式都可用（推荐）</h3>
+        <p>右侧折叠按钮始终存在。编辑模式也能展开目录导航。用户拥有完全控制权</p>
+      </div>
+    </div>
+    <div class="option" data-choice="split-only" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>目录仅在分屏模式出现</h3>
+        <p>保持现有行为。编辑/预览模式只有左侧文档列表可折叠</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>折叠状态是否记住？</h3>
+  <div class="options">
+    <div class="option" data-choice="remember" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>记住到 localStorage</h3>
+        <p>刷新页面、切换文档后折叠状态不变。用户体验连贯</p>
+      </div>
+    </div>
+    <div class="option" data-choice="forget" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>每次默认展开</h3>
+        <p>简单，每次进来都是展开状态，不引入持久化逻辑</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,11 +1,41 @@
 import MarkdownIt from 'markdown-it'
 import katex from 'katex'
+import 'katex/dist/katex.min.css'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
+import taskLists from 'markdown-it-task-lists'
 
 const md = new MarkdownIt({
   html: true,
   linkify: true,
-  breaks: true
-})
+  breaks: true,
+  highlight: (str: string, lang: string): string => {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return (
+          '<pre class="hljs"><code>' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          '</code></pre>'
+        )
+      } catch {
+        // fall through to auto-detection
+      }
+    }
+    if (lang) {
+      // Unknown language, escape and wrap
+      return (
+        '<pre class="hljs"><code>' +
+        md.utils.escapeHtml(str) +
+        '</code></pre>'
+      )
+    }
+    return (
+      '<pre class="hljs"><code>' +
+      md.utils.escapeHtml(str) +
+      '</code></pre>'
+    )
+  }
+}).use(taskLists)
 
 /**
  * Render Markdown string to HTML, with KaTeX math support.
@@ -17,6 +47,13 @@ export function renderMarkdown(content: string): string {
   let processed = content.replace(/```[\s\S]*?```/g, (match) => {
     codeBlocks.push(match)
     return `__CODE_BLOCK_${codeBlocks.length - 1}__`
+  })
+
+  // Also protect inline code from math processing
+  const inlineCode: string[] = []
+  processed = processed.replace(/`([^`]+)`/g, (match) => {
+    inlineCode.push(match)
+    return `__INLINE_CODE_${inlineCode.length - 1}__`
   })
 
   // Process block math: $$...$$
@@ -35,6 +72,11 @@ export function renderMarkdown(content: string): string {
     } catch {
       return _match
     }
+  })
+
+  // Restore inline code
+  inlineCode.forEach((code, i) => {
+    processed = processed.replace(`__INLINE_CODE_${i}__`, code)
   })
 
   // Restore code blocks
@@ -84,7 +126,8 @@ export function exportHtml(content: string, filename: string) {
 <head>
   <meta charset="UTF-8">
   <title>${filename}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/styles/github.min.css">
   <style>
     body { max-width: 800px; margin: 0 auto; padding: 20px; font-family: system-ui, sans-serif; }
     pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }

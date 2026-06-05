@@ -23,7 +23,9 @@ describe('renderMarkdown', () => {
   it('should render code blocks', () => {
     const html = renderMarkdown('```js\nconst x = 1;\n```')
     expect(html).toContain('<code')
-    expect(html).toContain('const x = 1')
+    // With highlight.js, source code is wrapped in span tags
+    expect(html).toContain('const')
+    expect(html).toContain('x = ')
   })
 
   it('should render inline math', () => {
