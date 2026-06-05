@@ -247,14 +247,38 @@ function cycleViewMode() {
 
 <template>
   <div class="flex gap-5 h-[calc(100vh-7rem)]">
-    <!-- Sidebar -->
-    <DocumentList
-      :documents="store.documents"
-      :current-id="docId"
-      :loading="store.loading"
-      @select="(id: number) => router.push(`/markdown/${id}`)"
-      @new="router.push('/markdown'); store.resetCurrent(); title = ''; content = ''; updatePreview()"
-    />
+    <!-- Left sidebar — Document list -->
+    <!-- Narrow strip (collapsed) -->
+    <div
+      v-if="leftCollapsed"
+      class="sidebar-strip"
+      @click="toggleLeft"
+      title="展开文档列表"
+    >
+      <span class="sidebar-strip-icon">📄</span>
+      <span class="sidebar-strip-count">{{ docCount }}</span>
+      <span class="sidebar-strip-label">文档</span>
+    </div>
+
+    <!-- Full panel (expanded) -->
+    <div v-else class="sidebar-panel" style="width: 208px;">
+      <DocumentList
+        :documents="store.documents"
+        :current-id="docId"
+        :loading="store.loading"
+        @select="(id: number) => router.push(`/markdown/${id}`)"
+        @new="router.push('/markdown'); store.resetCurrent(); title = ''; content = ''; updatePreview()"
+      />
+    </div>
+
+    <!-- Left collapse toggle button -->
+    <button
+      class="collapse-toggle"
+      @click="toggleLeft"
+      :title="leftCollapsed ? '展开文档列表' : '折叠文档列表'"
+    >
+      {{ leftCollapsed ? '▶' : '◀' }}
+    </button>
 
     <!-- Main -->
     <div class="flex-1 flex flex-col gap-3 min-w-0">
