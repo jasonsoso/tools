@@ -19,11 +19,11 @@ const emit = defineEmits<{
 
 function getTypeClass(type: string): string {
   switch (type) {
-    case 'string': return 'text-green-600'
+    case 'string': return 'text-emerald-600'
     case 'number': return 'text-blue-600'
-    case 'boolean': return 'text-purple-600'
-    case 'null': return 'text-gray-400'
-    default: return 'text-gray-700'
+    case 'boolean': return 'text-violet-500'
+    case 'null': return 'text-zinc-400'
+    default: return 'text-zinc-700'
   }
 }
 </script>
@@ -34,13 +34,13 @@ function getTypeClass(type: string): string {
       <button
         v-if="node.type === 'object' || node.type === 'array'"
         @click="emit('toggle', path)"
-        class="text-gray-400 hover:text-gray-600 w-4 text-xs"
+        class="text-zinc-400 hover:text-zinc-600 w-4 text-[10px] transition-colors leading-none"
       >
-        {{ collapsed.has(path) ? '▶' : '▼' }}
+        {{ collapsed.has(path) ? '▸' : '▾' }}
       </button>
       <span v-else class="w-4"></span>
-      <span class="text-gray-700">{{ node.key }}</span>
-      <span v-if="node.type !== 'object' && node.type !== 'array'" class="text-gray-400">: </span>
+      <span class="text-zinc-800 font-medium">{{ node.key }}</span>
+      <span v-if="node.type !== 'object' && node.type !== 'array'" class="text-zinc-400">:</span>
       <span :class="getTypeClass(node.type)">{{ node.value }}</span>
     </div>
     <template v-if="node.children && !collapsed.has(path)">

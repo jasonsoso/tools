@@ -3,32 +3,63 @@ const emit = defineEmits<{
   action: [name: string]
 }>()
 
-const buttons = [
-  { label: 'B', title: '加粗', action: 'bold' },
-  { label: 'I', title: '斜体', action: 'italic' },
-  { label: 'H1', title: '一级标题', action: 'h1' },
-  { label: 'H2', title: '二级标题', action: 'h2' },
-  { label: 'H3', title: '三级标题', action: 'h3' },
-  { label: '🔗', title: '链接', action: 'link' },
-  { label: '🖼', title: '图片', action: 'image' },
-  { label: '•≡', title: '无序列表', action: 'ul' },
-  { label: '1.', title: '有序列表', action: 'ol' },
-  { label: '<>', title: '代码块', action: 'code' },
-  { label: '𝑓', title: '数学公式', action: 'formula' },
-  { label: '⊞', title: '表格', action: 'table' },
+interface ToolBtn {
+  label: string
+  title: string
+  action: string
+  style?: string
+}
+
+const groups: { items: ToolBtn[] }[] = [
+  {
+    items: [
+      { label: 'B', title: '加粗', action: 'bold', style: 'font-bold' },
+      { label: 'I', title: '斜体', action: 'italic', style: 'italic' },
+    ]
+  },
+  {
+    items: [
+      { label: 'H1', title: '一级标题', action: 'h1' },
+      { label: 'H2', title: '二级标题', action: 'h2' },
+      { label: 'H3', title: '三级标题', action: 'h3' },
+    ]
+  },
+  {
+    items: [
+      { label: '🔗', title: '链接', action: 'link' },
+      { label: '🖼', title: '图片', action: 'image' },
+    ]
+  },
+  {
+    items: [
+      { label: '• ≡', title: '无序列表', action: 'ul' },
+      { label: '1.', title: '有序列表', action: 'ol' },
+    ]
+  },
+  {
+    items: [
+      { label: '<>', title: '代码块', action: 'code' },
+      { label: '∑', title: '数学公式', action: 'formula' },
+      { label: '⊞', title: '表格', action: 'table' },
+    ]
+  },
 ]
 </script>
 
 <template>
-  <div class="flex gap-1 flex-wrap bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
-    <button
-      v-for="btn in buttons"
-      :key="btn.action"
-      :title="btn.title"
-      @click="emit('action', btn.action)"
-      class="px-2 py-1 text-xs font-medium bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-700"
-    >
-      {{ btn.label }}
-    </button>
+  <div class="flex items-center gap-0.5 flex-wrap bg-white border border-black/[0.05] px-1.5 py-1 rounded-xl">
+    <template v-for="(group, gi) in groups" :key="gi">
+      <div v-if="gi > 0" class="w-px h-4 bg-black/[0.06] mx-1" />
+      <button
+        v-for="btn in group.items"
+        :key="btn.action"
+        :title="btn.title"
+        @click="emit('action', btn.action)"
+        class="tool-btn"
+        :class="btn.style"
+      >
+        {{ btn.label }}
+      </button>
+    </template>
   </div>
 </template>

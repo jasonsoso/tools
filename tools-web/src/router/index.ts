@@ -50,7 +50,7 @@ router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !token) {
     next({ path: '/login', query: { redirect: to.fullPath } })
   } else if ((to.path === '/login' || to.path === '/register') && token) {
-    next(to.query.redirect || '/')
+    next((to.query.redirect as string) || '/')
   } else {
     next()
   }

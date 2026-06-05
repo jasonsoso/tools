@@ -97,8 +97,8 @@ async function handleDelete() {
 </script>
 
 <template>
-  <div class="flex gap-4 h-[calc(100vh-6rem)]">
-    <!-- Records Sidebar -->
+  <div class="flex gap-5 h-[calc(100vh-7rem)]">
+    <!-- Sidebar -->
     <RecordList
       :records="store.records"
       :current-id="recordId"
@@ -107,58 +107,78 @@ async function handleDelete() {
       @new="router.push('/json'); store.resetCurrent(); name = ''; input = ''; result = ''"
     />
 
-    <!-- Main Content -->
+    <!-- Main -->
     <div class="flex-1 flex flex-col gap-3 min-w-0">
-      <!-- Header -->
+      <!-- Header row -->
       <div class="flex items-center gap-3">
-        <input v-model="name" type="text" placeholder="记录名称（必填）"
-               class="flex-1 text-lg font-semibold px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-        <button @click="handleSave" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+        <input
+          v-model="name"
+          type="text"
+          placeholder="记录名称（必填）"
+          class="flex-1 text-base font-medium px-4 py-2.5 bg-white border border-black/[0.06] rounded-xl text-zinc-900 placeholder:text-zinc-400 outline-none transition-all duration-200 focus:border-violet-300 focus:shadow-[0_0_0_3px_rgba(139,92,246,.06)]"
+        />
+        <button @click="handleSave" class="btn-primary">
           保存
         </button>
-        <button v-if="recordId" @click="handleDelete" class="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
+        <button v-if="recordId" @click="handleDelete" class="btn-danger">
           删除
         </button>
       </div>
 
       <!-- Toolbar -->
-      <div class="flex gap-2 flex-wrap">
-        <button @click="handleFormat" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button @click="handleFormat" class="btn-secondary">
           格式化
         </button>
-        <button @click="handleCompress" class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700">
+        <button @click="handleCompress" class="btn-secondary">
           压缩
         </button>
-        <button @click="handleCopy" class="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">
+        <div class="w-px h-4 bg-black/[0.08] mx-1" />
+        <button @click="handleCopy" class="btn-secondary">
           {{ copied ? '已复制 ✓' : '复制结果' }}
         </button>
-        <label class="flex items-center gap-1 text-sm text-gray-600 ml-2">
-          <input v-model="showTree" type="checkbox" /> 树形视图
+        <div class="w-px h-4 bg-black/[0.08] mx-1" />
+        <label class="flex items-center gap-1.5 text-xs text-zinc-500 cursor-pointer select-none ml-1">
+          <input v-model="showTree" type="checkbox" class="accent-indigo-500" />
+          树形视图
         </label>
-        <span v-if="!isValid && input.trim()" class="text-red-500 text-sm self-center">
+        <span v-if="!isValid && input.trim()" class="text-xs text-red-500 font-medium ml-auto">
           格式无效
         </span>
       </div>
 
-      <div v-if="error" class="text-red-500 text-sm px-3 py-2 bg-red-50 rounded-md">{{ error }}</div>
+      <!-- Error -->
+      <div v-if="error" class="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+        {{ error }}
+      </div>
 
-      <!-- Input + Output Split -->
-      <div class="flex-1 flex gap-3 min-h-0">
+      <!-- Input + Output split -->
+      <div class="flex-1 flex gap-4 min-h-0">
         <!-- Input -->
         <div class="flex-1 flex flex-col min-w-0">
-          <label class="text-xs font-semibold text-gray-500 mb-1">输入</label>
-          <textarea v-model="input"
-                    class="flex-1 w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500"
-                    placeholder='{"key": "value"}'></textarea>
+          <label class="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5 ml-1">
+            输入
+          </label>
+          <textarea
+            v-model="input"
+            class="flex-1 w-full px-4 py-3 card font-mono text-sm resize-none outline-none transition-all duration-200 focus:border-violet-300 focus:shadow-[0_0_0_3px_rgba(139,92,246,.06)]"
+            placeholder='{"key": "value"}'
+            style="border-radius: 16px;"
+          ></textarea>
         </div>
 
         <!-- Output -->
         <div class="flex-1 flex flex-col min-w-0">
-          <label class="text-xs font-semibold text-gray-500 mb-1">结果</label>
-          <div class="flex-1 border border-gray-300 rounded-md overflow-auto bg-white p-3">
+          <label class="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5 ml-1">
+            结果
+          </label>
+          <div
+            class="flex-1 card overflow-auto p-4"
+            style="border-radius: 16px;"
+          >
             <JsonTree v-if="showTree && result" :data="result" />
-            <pre v-else-if="result" class="font-mono text-sm whitespace-pre-wrap">{{ result }}</pre>
-            <p v-else class="text-gray-400 text-sm">点击格式化或压缩查看结果</p>
+            <pre v-else-if="result" class="font-mono text-sm text-zinc-800 whitespace-pre-wrap">{{ result }}</pre>
+            <p v-else class="text-sm text-zinc-400">点击格式化或压缩查看结果</p>
           </div>
         </div>
       </div>

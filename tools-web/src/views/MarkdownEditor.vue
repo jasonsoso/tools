@@ -148,8 +148,8 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="flex gap-4 h-[calc(100vh-6rem)]" @keydown="handleKeydown">
-    <!-- Document List Sidebar -->
+  <div class="flex gap-5 h-[calc(100vh-7rem)]" @keydown="handleKeydown">
+    <!-- Sidebar -->
     <DocumentList
       :documents="store.documents"
       :current-id="docId"
@@ -158,15 +158,18 @@ function handleKeydown(e: KeyboardEvent) {
       @new="router.push('/markdown'); store.resetCurrent(); title = ''; content = ''; updatePreview()"
     />
 
-    <!-- Main Editor Area -->
-    <div class="flex-1 flex flex-col gap-2 min-w-0">
-      <!-- Title -->
+    <!-- Main -->
+    <div class="flex-1 flex flex-col gap-3 min-w-0">
+      <!-- Header row -->
       <div class="flex items-center gap-3">
-        <input v-model="title" type="text" placeholder="文档标题（必填）"
-               class="flex-1 text-lg font-semibold px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-        <span v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</span>
-        <button @click="handleSave" :disabled="saving"
-                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50">
+        <input
+          v-model="title"
+          type="text"
+          placeholder="文档标题（必填）"
+          class="flex-1 text-base font-medium px-4 py-2.5 bg-white border border-black/[0.06] rounded-xl text-zinc-900 placeholder:text-zinc-400 outline-none transition-all duration-200 focus:border-indigo-300 focus:shadow-[0_0_0_3px_rgba(99,102,241,.06)]"
+        />
+        <span v-if="saveError" class="text-xs text-red-500 whitespace-nowrap">{{ saveError }}</span>
+        <button @click="handleSave" :disabled="saving" class="btn-primary">
           {{ saving ? '保存中...' : '保存' }}
         </button>
         <ExportMenu :content="content" :title="title" />
@@ -175,26 +178,26 @@ function handleKeydown(e: KeyboardEvent) {
       <!-- Toolbar -->
       <MdToolbar @action="handleToolbarAction" />
 
-      <!-- Editor + Preview Split -->
-      <div class="flex-1 flex gap-3 min-h-0">
-        <!-- CodeMirror Editor -->
-        <div class="flex-1 border border-gray-300 rounded-md overflow-hidden bg-white">
+      <!-- Editor + Preview split -->
+      <div class="flex-1 flex gap-4 min-h-0">
+        <!-- Editor -->
+        <div class="flex-1 card overflow-hidden p-0">
           <div ref="editorContainer" class="h-full"></div>
         </div>
 
-        <!-- Preview Panel -->
-        <div class="flex-1 border border-gray-300 rounded-md overflow-auto bg-white p-4">
+        <!-- Preview -->
+        <div class="flex-1 card overflow-auto p-5">
           <MdPreview :html="htmlPreview" />
         </div>
 
-        <!-- Outline Panel -->
+        <!-- Outline -->
         <div class="w-48 flex-shrink-0">
           <MdOutline :items="outline" />
         </div>
       </div>
     </div>
 
-    <!-- Table Editor Modal -->
+    <!-- Table modal -->
     <TableEditorModal
       v-if="showTableModal"
       @confirm="handleTableInsert"

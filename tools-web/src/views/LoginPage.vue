@@ -28,29 +28,58 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-[60vh]">
-    <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-      <h2 class="text-2xl font-bold text-center mb-6">登录</h2>
+  <div class="flex items-center justify-center min-h-[65vh]">
+    <div class="card w-full max-w-sm p-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h2 class="text-xl font-semibold text-zinc-900 tracking-tight">欢迎回来</h2>
+        <p class="text-sm text-zinc-500 mt-1">登录以继续使用工具</p>
+      </div>
+
+      <!-- Form -->
       <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
-          <input v-model="username" type="text" required
-                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          <label class="block text-xs font-medium text-zinc-500 mb-1.5 ml-0.5">用户名</label>
+          <input
+            v-model="username"
+            type="text"
+            required
+            class="input-field"
+            placeholder="请输入用户名"
+          />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
-          <input v-model="password" type="password" required
-                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          <label class="block text-xs font-medium text-zinc-500 mb-1.5 ml-0.5">密码</label>
+          <input
+            v-model="password"
+            type="password"
+            required
+            class="input-field"
+            placeholder="请输入密码"
+          />
         </div>
-        <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
-        <button type="submit" :disabled="loading"
-                class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50">
+
+        <!-- Error -->
+        <div v-if="error" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+          {{ error }}
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" :disabled="loading" class="btn-primary w-full">
           {{ loading ? '登录中...' : '登录' }}
         </button>
       </form>
-      <p class="text-center text-sm text-gray-500 mt-4">
+
+      <!-- Footer -->
+      <p class="text-center text-xs text-zinc-400 mt-6">
         还没有账号？
-        <router-link :to="{ path: '/register', query: { redirect: $route.query.redirect } }" class="text-blue-600 hover:underline">注册</router-link>
+        <router-link
+          :to="{ path: '/register', query: { redirect: $route.query.redirect } }"
+          class="font-medium hover:text-zinc-700 transition-colors"
+          style="color: #6366f1;"
+        >
+          注册
+        </router-link>
       </p>
     </div>
   </div>
