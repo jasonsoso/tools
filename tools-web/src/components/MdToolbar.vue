@@ -47,6 +47,11 @@ const groups: { items: ToolBtn[] }[] = [
       { label: '分割线', action: 'hr', icon: 'M4 12h16M8 6l4-4 4 4M8 18l4 4 4-4' },
     ]
   },
+  {
+    items: [
+      { label: '全屏', action: 'fullscreen', icon: 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3' },
+    ]
+  },
 ]
 </script>
 

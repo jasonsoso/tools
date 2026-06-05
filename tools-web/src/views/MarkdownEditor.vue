@@ -271,7 +271,7 @@ function cycleViewMode() {
   <div
     ref="fullscreenRoot"
     :class="[
-      'flex gap-5',
+      'flex gap-5 fullscreen-root',
       isFullscreen
         ? 'fixed inset-0 z-50 bg-white p-4'
         : 'h-[calc(100vh-7rem)]'

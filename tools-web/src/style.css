@@ -363,3 +363,13 @@ body {
   letter-spacing: 0.05em;
   margin-top: 4px;
 }
+
+/* ---- Fullscreen mode ---- */
+.fullscreen-root:fullscreen {
+  background: #ffffff;
+  padding: 20px;
+}
+.fullscreen-root:fullscreen .card {
+  /* Subtle adjustment for fullscreen cards */
+  border-radius: 14px;
+}
