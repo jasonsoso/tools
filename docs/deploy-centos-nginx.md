@@ -165,7 +165,20 @@ server:
 EOF
 ```
 
-### 4.2 配置 Nginx
+### 4.2 配置 DNS 解析
+
+在你的 DNS 服务商（阿里云/腾讯云/Cloudflare 等）添加一条 A 记录：
+
+```
+类型: A
+主机: tools
+值:   YOUR_SERVER_IP
+TTL:  600
+```
+
+生效后 `tools.jasonsoso.com` 就指向你的服务器了。
+
+### 4.3 配置 Nginx
 
 ```bash
 cat > /etc/nginx/conf.d/tools.conf << 'EOF'
@@ -177,7 +190,7 @@ upstream tools_backend {
 
 server {
     listen       80;
-    server_name  YOUR_DOMAIN_OR_IP;   # 改成你的域名或 IP
+    server_name  tools.jasonsoso.com;
 
     # 日志
     access_log  /var/log/nginx/tools.access.log;
@@ -289,7 +302,7 @@ curl http://localhost:8081/api/auth/login -H "Content-Type: application/json" -d
 curl http://localhost/api/auth/login -H "Content-Type: application/json" -d '{"username":"test","password":"test"}'
 # 预期: 同上的 JSON 响应
 
-# 4. 浏览器访问 http://YOUR_SERVER_IP
+# 4. 浏览器访问 http://tools.jasonsoso.com
 # 应看到前端页面，注册/登录后可使用
 ```
 
@@ -318,7 +331,7 @@ systemctl restart tools-backend
 yum install -y certbot python3-certbot-nginx
 
 # 自动配置（需域名已解析到服务器）
-certbot --nginx -d YOUR_DOMAIN
+certbot --nginx -d tools.jasonsoso.com
 
 # 证书自动续期
 certbot renew --dry-run
