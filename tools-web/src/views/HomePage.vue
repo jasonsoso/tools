@@ -17,13 +17,13 @@ import ToolCard from '@/components/ToolCard.vue'
     <!-- Tool Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
       <ToolCard
-        title="Markdown 编辑器"
+        title="Markdown 在线编辑器"
         description="实时预览、数学公式、表格编辑与文档导出"
         to="/markdown"
         icon="markdown"
       />
       <ToolCard
-        title="JSON 格式化器"
+        title="JSON 格式化"
         description="格式化、压缩、验证与树形视图"
         to="/json"
         icon="json"

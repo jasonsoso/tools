@@ -3,6 +3,7 @@ package com.tools.config;
 import com.tools.common.ApiResponse;
 import com.tools.common.BusinessException;
 import com.tools.common.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <p>
  * 所有响应都是 JSON 格式，不会出现 Spring 默认的 HTML 错误页面。
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -32,6 +34,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessException.class)
     public ApiResponse<Void> handleBusiness(BusinessException ex) {
+        log.warn("业务异常: code={}, message={}", ex.getCode(), ex.getMessage());
         return ApiResponse.error(ex.getCode(), ex.getMessage());
     }
 

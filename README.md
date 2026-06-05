@@ -4,8 +4,8 @@
 
 ## 功能
 
-- 📝 **Markdown 编辑器** — CodeMirror 6 编辑 + markdown-it 实时预览，支持 KaTeX 数学公式、表格插入、目录大纲、文档导出（.md / HTML）
-- 🔧 **JSON 格式化器** — 格式化 / 压缩 / 校验 JSON，树形视图，记录管理
+- 📝 **Markdown 在线编辑器** — CodeMirror 6 编辑 + markdown-it 实时预览，支持 KaTeX 数学公式、表格插入、目录大纲、文档导出（.md / HTML）
+- 🔧 **JSON 格式化** — 格式化 / 压缩 / 校验 JSON，树形视图，记录管理
 - 🔐 **用户认证** — JWT 登录 / 注册，Spring Security 权限控制
 
 ## 技术栈

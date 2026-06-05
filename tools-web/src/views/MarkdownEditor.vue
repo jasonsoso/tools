@@ -32,6 +32,22 @@ const editorContainer = ref<HTMLDivElement>()
 
 const docId = computed(() => route.params.id ? Number(route.params.id) : null)
 
+/** 加载指定文档到编辑器 */
+function loadDocToEditor(id: number) {
+  store.loadDocument(id).then(() => {
+    if (store.currentDoc) {
+      title.value = store.currentDoc.title
+      content.value = store.currentDoc.content || ''
+      if (editorView) {
+        editorView.dispatch({
+          changes: { from: 0, to: editorView.state.doc.length, insert: content.value }
+        })
+      }
+      updatePreview()
+    }
+  })
+}
+
 function insertMarkdown(syntax: string) {
   if (!editorView) return
   const selection = editorView.state.selection.main
@@ -98,24 +114,30 @@ onMounted(() => {
   }
 
   if (docId.value) {
-    store.loadDocument(docId.value).then(() => {
-      if (store.currentDoc) {
-        title.value = store.currentDoc.title
-        content.value = store.currentDoc.content || ''
-        if (editorView) {
-          editorView.dispatch({
-            changes: { from: 0, to: editorView.state.doc.length, insert: content.value }
-          })
-        }
-        updatePreview()
-      }
-    })
+    loadDocToEditor(docId.value)
   }
   store.loadList()
 })
 
 watch(content, () => {
   updatePreview()
+})
+
+// 监听文档 ID 变化，在已编辑和新建文档之间切换时重新加载
+watch(docId, (newId) => {
+  if (newId) {
+    loadDocToEditor(newId)
+  } else {
+    // 切换到新建模式：清空编辑器和预览
+    title.value = ''
+    content.value = ''
+    if (editorView) {
+      editorView.dispatch({
+        changes: { from: 0, to: editorView.state.doc.length, insert: '' }
+      })
+    }
+    updatePreview()
+  }
 })
 
 async function handleSave() {

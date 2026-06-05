@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Markdown 编辑器服务，提供 Markdown 文档的 CRUD 操作。
+ * Markdown 在线编辑器服务，提供 Markdown 文档的 CRUD 操作。
  * <p>
  * 核心业务规则与 {@link JsonService} 一致：
  * <ul>

@@ -1,6 +1,6 @@
 # tools-web
 
-在线工具包前端，基于 Vue 3 + TypeScript 构建，提供 Markdown 编辑器和 JSON 格式化器。
+在线工具包前端，基于 Vue 3 + TypeScript 构建，提供 Markdown 在线编辑器和 JSON 格式化。
 
 ## 技术栈
 
@@ -55,8 +55,8 @@ tools-web/src/
 │   ├── LoginPage           # 登录页 — 卡片表单
 │   ├── RegisterPage        # 注册页 — 卡片表单
 │   ├── HomePage            # 首页 — Hero + 工具卡片入口
-│   ├── MarkdownEditor      # Markdown 编辑器 — 侧边栏 + 编辑/预览/大纲三栏
-│   └── JsonFormatter       # JSON 格式化器 — 侧边栏 + 输入/输出双栏
+│   ├── MarkdownEditor      # Markdown 在线编辑器 — 侧边栏 + 编辑/预览/大纲三栏
+│   └── JsonFormatter       # JSON 格式化 — 侧边栏 + 输入/输出双栏
 │
 ├── components/        # 通用组件
 │   ├── NavBar              # 玻璃态导航栏
@@ -85,10 +85,10 @@ tools-web/src/
 ### 首页
 
 - Hero 区展示工具名称和标语
-- 两张卡片分别跳转 Markdown 编辑器和 JSON 格式化器
+- 两张卡片分别跳转 Markdown 在线编辑器和 JSON 格式化
 - 卡片 hover 时箭头右移、边框高亮
 
-### Markdown 编辑器
+### Markdown 在线编辑器
 
 - **三栏布局**：文档列表 → 编辑/预览 → 目录大纲
 - **CodeMirror 6** 编辑器，支持 Markdown 语法高亮
@@ -99,7 +99,7 @@ tools-web/src/
 - **导出**：支持下载 .md 和 HTML 格式
 - **快捷键**：`Ctrl+S` 保存
 
-### JSON 格式化器
+### JSON 格式化
 
 - **双栏布局**：输入 ↔ 结果
 - **格式化**：美化 JSON 缩进
@@ -156,10 +156,10 @@ npx vitest run
 | `/` | 首页 | 否 |
 | `/login` | 登录 | 否 |
 | `/register` | 注册 | 否 |
-| `/markdown` | Markdown 编辑器（新建） | 是 |
-| `/markdown/:id` | Markdown 编辑器（编辑） | 是 |
-| `/json` | JSON 格式化器（新建） | 是 |
-| `/json/:id` | JSON 格式化器（编辑） | 是 |
+| `/markdown` | Markdown 在线编辑器（新建） | 是 |
+| `/markdown/:id` | Markdown 在线编辑器（编辑） | 是 |
+| `/json` | JSON 格式化（新建） | 是 |
+| `/json/:id` | JSON 格式化（编辑） | 是 |
 
 路由守卫逻辑：
 - 访问需认证页面但无 Token → 跳转登录页（携带 `redirect` 参数）

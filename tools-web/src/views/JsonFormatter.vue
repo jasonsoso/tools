@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useJsonStore } from '@/stores/json'
 import RecordList from '@/components/RecordList.vue'
@@ -31,6 +31,26 @@ onMounted(() => {
     })
   }
   store.loadList()
+})
+
+// 监听记录 ID 变化，在已编辑/新建记录之间切换时重新加载
+watch(recordId, (newId) => {
+  if (newId) {
+    store.loadRecord(newId).then(() => {
+      if (store.currentRecord) {
+        name.value = store.currentRecord.name
+        input.value = store.currentRecord.content
+        result.value = ''
+        error.value = ''
+      }
+    })
+  } else {
+    // 切换到新建模式：清空表单
+    name.value = ''
+    input.value = ''
+    result.value = ''
+    error.value = ''
+  }
 })
 
 function handleFormat() {
