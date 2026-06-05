@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* ================================================================
    Design System — Minimal · Premium · Futuristic
@@ -203,4 +204,162 @@ body {
 .tool-btn:active {
   background: rgba(99, 102, 241, 0.1);
   color: #6366f1;
+}
+
+/* ---- CodeMirror styling ---- */
+.cm-editor {
+  height: 100%;
+  font-family:
+    "JetBrains Mono", "Fira Code", "Cascadia Code",
+    "SF Mono", "Menlo", "Consolas",
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.cm-editor .cm-scroller {
+  padding: 16px 20px;
+}
+.cm-editor .cm-gutters {
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  background: #fafafa;
+  color: #a1a1aa;
+  padding-right: 4px;
+}
+.cm-editor .cm-activeLineGutter {
+  background: rgba(99, 102, 241, 0.04);
+}
+.cm-editor .cm-activeLine {
+  background: rgba(99, 102, 241, 0.03);
+}
+.cm-editor .cm-cursor {
+  border-left-color: #6366f1;
+}
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused .cm-selectionBackground {
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+.cm-editor .cm-line {
+  padding-left: 2px;
+}
+
+/* ---- Preview block styling ---- */
+/* Code blocks rendered by highlight.js */
+.prose pre.hljs {
+  background: #f8f8f8;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* KaTeX formula styling */
+.katex-display {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.katex {
+  font-size: 1.05em;
+}
+
+/* Task list styling */
+.prose ul li.task-list-item {
+  list-style-type: none;
+  margin-left: -1.5em;
+}
+.prose ul li.task-list-item::marker {
+  content: none;
+}
+.prose ul li.task-list-item input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+/* Empty preview placeholder */
+.preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #c4c4c4;
+  font-size: 0.875rem;
+  user-select: none;
+}
+
+/* ---- Collapsible sidebar ---- */
+.sidebar-panel {
+  transition: width 250ms ease, opacity 200ms ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sidebar-panel.collapsed {
+  width: 36px !important;
+}
+
+/* Collapse toggle button — sits between sidebar and main content */
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  font-size: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 150ms ease, color 150ms ease;
+  padding: 0;
+  margin: 0;
+}
+.collapse-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #52525b;
+}
+
+/* Narrow strip — shown when sidebar collapsed */
+.sidebar-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 14px;
+  gap: 8px;
+  width: 36px;
+  height: 100%;
+  background: #f5f5f5;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.sidebar-strip:hover {
+  background: #eeeeee;
+}
+.sidebar-strip-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.sidebar-strip-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: #a1a1aa;
+  line-height: 1;
+}
+.sidebar-strip-label {
+  font-size: 9px;
+  color: #a1a1aa;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
 }
