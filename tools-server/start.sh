@@ -22,6 +22,7 @@ nohup java -server \
   --logging.level.root=info \
   --server.port=8081 \
   --spring.profiles.active=prod \
+  --spring.config.additional-location=file:$PROJECT_DIR/ \
   >> $LOG_FILE 2>&1 &
 
 NEW_PID=$!
