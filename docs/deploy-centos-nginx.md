@@ -206,7 +206,7 @@ server {
     # 静态资源缓存（JS/CSS/图片/字体）
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         root      /opt/project/tools-web;
-        expires   30d;
+        expires   1d;
         add_header Cache-Control "public, immutable";
     }
 
@@ -231,39 +231,30 @@ nginx -t
 systemctl reload nginx
 ```
 
-### 4.3 配置后端 Systemd 服务
+### 4.4 配置后端启动脚本
+
+项目已自带 `start.sh`，上传后在服务器上赋予执行权限即可：
 
 ```bash
-cat > /etc/systemd/system/tools-backend.service << 'EOF'
-[Unit]
-Description=Tools Backend Service
-After=network.target mysqld.service
-Wants=mysqld.service
+# 上传启动脚本
+scp tools-server/start.sh root@YOUR_SERVER_IP:/opt/project/tools-server/
 
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/opt/project/tools-server
-ExecStart=/usr/bin/java -jar /opt/project/tools-server/tools-server-0.0.1-SNAPSHOT.jar --spring.config.additional-location=/opt/project/tools-server/application-prod.yml
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
+# 在服务器上
+ssh root@YOUR_SERVER_IP
+chmod +x /opt/project/tools-server/start.sh
+```
 
-[Install]
-WantedBy=multi-user.target
-EOF
+**启动/停止/重启：**
 
-# 启动
-systemctl daemon-reload
-systemctl start tools-backend
-systemctl enable tools-backend
+```bash
+# 启动（先自动杀旧进程再起新进程）
+/opt/project/tools-server/start.sh
 
-# 查看状态
-systemctl status tools-backend
+# 手动停止
+ps -ef | grep tools-server | grep -v grep | awk '{print $2}' | xargs kill
 
 # 查看日志
-journalctl -u tools-backend -f
+tail -f /opt/project/tools-server/tools.log
 ```
 
 ## 5. 防火墙配置
@@ -294,7 +285,7 @@ curl -I http://localhost
 # 预期: HTTP/1.1 200 OK
 
 # 2. 检查后端
-systemctl status tools-backend
+ps -ef | grep tools-server | grep -v grep
 curl http://localhost:8081/api/auth/login -H "Content-Type: application/json" -d '{"username":"test","password":"test"}'
 # 预期: JSON 响应（即使是 401，说明后端正常运行）
 
@@ -310,10 +301,10 @@ curl http://localhost/api/auth/login -H "Content-Type: application/json" -d '{"u
 
 ```bash
 # 查看后端日志
-journalctl -u tools-backend -f
+tail -f /opt/project/tools-server/tools.log
 
-# 重启后端
-systemctl restart tools-backend
+# 重启后端（start.sh 会自动杀旧进程再启动）
+/opt/project/tools-server/start.sh
 
 # 更新前端（构建后上传覆盖）
 scp -r dist/* root@YOUR_SERVER_IP:/opt/project/tools-web/
@@ -321,7 +312,7 @@ scp -r dist/* root@YOUR_SERVER_IP:/opt/project/tools-web/
 
 # 更新后端
 scp tools-server-0.0.1-SNAPSHOT.jar root@YOUR_SERVER_IP:/opt/project/tools-server/
-systemctl restart tools-backend
+/opt/project/tools-server/start.sh
 ```
 
 ## 8. HTTPS 配置（可选）
@@ -354,16 +345,16 @@ certbot renew --dry-run
     └── ...
 
 配置文件:
-/etc/nginx/conf.d/tools.conf              # Nginx 配置
-/etc/systemd/system/tools-backend.service # 后端服务
+/opt/project/tools-server/start.sh            # 后端启动脚本
+/usr/local/nginx/conf.d/tools.conf            # Nginx 配置
 ```
 
 ## 故障排查
 
 | 问题 | 检查 |
 |------|------|
-| 后端起不来 | `journalctl -u tools-backend -f` 看 Java 错误，检查 MySQL 连接 |
+| 后端起不来 | `tail -50 /opt/project/tools-server/tools.log` 看 Java 错误，检查 MySQL 连接 |
 | 前端 404 | `nginx -t` 检查配置，确认 `try_files` 有 `/index.html` |
-| API 502 | 后端是否启动？`systemctl status tools-backend`；Nginx upstream 端口是否正确 |
+| API 502 | 后端是否启动？`ps -ef \| grep tools-server`；Nginx upstream 端口是否正确 |
 | 跨域错误 | 检查 nginx proxy_pass 是否正确转发 `/api/`；前端 baseURL 是否为 `/api` |
-| MySQL 连不上 | `systemctl status mysqld`；检查 `application-prod.yml` 中账号密码 |
+| MySQL 连不上 | `systemctl status mysqld`；检查 `application.yml` 中账号密码 |
