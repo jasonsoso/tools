@@ -21,6 +21,15 @@ const isActive = (path: string) => route.path.startsWith(path)
           Toolbox
         </router-link>
         <div class="flex items-center gap-1">
+          <a
+            href="http://www.jasonsoso.com"
+            target="_blank"
+            class="px-3 py-1.5 text-sm rounded-lg transition-colors no-underline text-zinc-500 hover:text-zinc-800 hover:bg-black/[0.02]"
+          >
+            ← 主页
+          </a>
+        </div>
+        <div class="flex items-center gap-1">
           <router-link
             to="/markdown"
             :class="[
