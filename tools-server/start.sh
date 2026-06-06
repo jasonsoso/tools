@@ -19,7 +19,7 @@ nohup java -server \
   -XX:+HeapDumpOnOutOfMemoryError \
   -Xms512m -Xmx512m \
   -jar $JAR_FILE \
-  --logging.level.root=info \
+  --logging.level.root=debug \
   --server.port=8081 \
   --spring.profiles.active=prod \
   --spring.config.additional-location=file:$PROJECT_DIR/ \
